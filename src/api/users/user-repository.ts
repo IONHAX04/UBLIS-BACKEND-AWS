@@ -1,5 +1,5 @@
 import { executeQuery } from "../../helper/db";
-import { buildUpdateQuery } from "../../helper/buildquery";
+import { buildUpdateQuery, getChanges } from "../../helper/buildquery";
 import {
   checkQuery,
   getCustomerCount,
@@ -503,7 +503,7 @@ export class UserRepository {
           token: token,
           data: profileData,
         },
-        false
+        true
       );
     } catch (error) {
       console.error("Error in Dashboard Data Passing:", error);
@@ -511,6 +511,7 @@ export class UserRepository {
     }
   }
   public async userProfileUpdateV1(userData: any): Promise<any> {
+    console.log("userData", userData);
     const refStId = 78;
 
     try {
@@ -518,6 +519,8 @@ export class UserRepository {
         if (userData.hasOwnProperty(section)) {
           let tableName: string;
           let updatedData;
+          let oldData;
+          let changes = {}; // To store any detected changes
 
           switch (section) {
             case "address":
@@ -534,42 +537,49 @@ export class UserRepository {
               updatedData = { ...updatedData, refAdAdd1Type, refAdAdd2Type };
               delete updatedData.addresstype;
 
+              oldData = userData.oldData.address;
               break;
 
             case "personalData":
               tableName = "refUserPersonalData";
               updatedData = userData.personalData;
+              oldData = userData.oldData.personalData;
               break;
 
             case "generalhealth":
               tableName = "refUserHealthData";
               updatedData = userData.generalhealth;
+              oldData = userData.oldData.generalhealth;
               break;
 
             case "presentHealth":
               tableName = "refUserPresentHealth";
               updatedData = userData.presentHealth;
+              oldData = userData.oldData.presentHealth;
               break;
 
             case "communication":
               tableName = "refUserCommunication";
               updatedData = userData.communication;
+              oldData = userData.oldData.communication;
               break;
 
             default:
-              console.log("Unrecognized section");
               continue;
           }
 
+          // Compare old and updated data to find changes
+          changes = getChanges(updatedData, oldData);
+          console.log("changes", changes);
+
+          // Prepare and execute the update query
           const identifier = { column: "refStId", value: refStId };
           const { updateQuery, values } = buildUpdateQuery(
             tableName,
             updatedData,
             identifier
           );
-
-          const userResult = await executeQuery(updateQuery, values);
-          console.log("userResult", userResult);
+          await executeQuery(updateQuery, values);
         }
       }
 
@@ -579,13 +589,13 @@ export class UserRepository {
       return encrypt(
         {
           success: true,
-          message: "Profile data passed successfully",
+          message: "Profile data updated successfully",
           token: token,
         },
         false
       );
     } catch (error) {
-      console.error("Error in Dashboard Data Passing:", error);
+      console.error("Error in Profile Data Update:", error);
       throw error;
     }
   }
