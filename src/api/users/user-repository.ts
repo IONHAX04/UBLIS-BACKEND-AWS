@@ -305,6 +305,7 @@ export class UserRepository {
   ): Promise<any> {
     try {
       const refStId = decodedToken;
+      console.log("refStId", refStId);
       const id = [refStId];
       const user = await executeQuery(selectUserData, id);
 
@@ -340,7 +341,6 @@ export class UserRepository {
       );
     }
   }
-  
 
   public async userDashBoardDataV1(
     userData: any

@@ -16,8 +16,11 @@ export class Resolver {
   public async validateUsers(user_data: any, domain_code: any): Promise<any> {
     return await this.userRepository.validateUsers(user_data, domain_code);
   }
-  public async validateUsersData(user_data: any, domain_code: any): Promise<any> {
-    return await this.userRepository.validateUsersData(user_data, domain_code);
+  public async validateUsersData(
+    user_data: any,
+    domain_code: any
+  ): Promise<any> {
+    return await this.userRepository.validateTokenData(user_data, domain_code);
   }
 
   public async userSignUpV1(user_data: any, domain_code: any): Promise<any> {
@@ -49,7 +52,10 @@ export class Resolver {
     user_data: any,
     domain_code: any
   ): Promise<any> {
-    return await this.userRepository.userProfileUpdateV1(user_data, domain_code);
+    return await this.userRepository.userProfileUpdateV1(
+      user_data,
+      domain_code
+    );
   }
 }
 

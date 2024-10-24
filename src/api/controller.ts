@@ -90,8 +90,6 @@ export class UserController {
     response: Hapi.ResponseToolkit
   ): Promise<any> => {
     const decodedToken = request.plugins.token.id;
-    console.log("decodedToken", decodedToken);
-    logger.info("Router----- line 17");
     try {
       logger.info(`GET URL REQ => ${request.url.href}`);
       const domainCode = request.headers.domain_code || "";
