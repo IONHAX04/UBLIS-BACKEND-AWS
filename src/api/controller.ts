@@ -84,11 +84,13 @@ export class UserController {
         .code(500);
     }
   };
+
   public validateUserTokenV1 = async (
     request: any,
     response: Hapi.ResponseToolkit
   ): Promise<any> => {
     const decodedToken = request.plugins.token.id;
+    console.log("decodedToken", decodedToken);
     logger.info("Router----- line 17");
     try {
       logger.info(`GET URL REQ => ${request.url.href}`);
@@ -105,7 +107,7 @@ export class UserController {
       }
       return response.response(entity).code(200); // Unauthorized if failed
     } catch (error) {
-      logger.error("Error in userLogin:", error);
+      logger.error("Error in user Token Validation", error);
       return response
         .response({
           success: false,
@@ -147,6 +149,7 @@ export class UserController {
         .code(500);
     }
   };
+
   public validateUserName = async (
     request: Hapi.Request,
     response: Hapi.ResponseToolkit
