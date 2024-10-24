@@ -29,8 +29,8 @@ const generateUniqueFilename = (originalName: string): string => {
 
 // Function to store a file
 export const storeFile = async (file: HapiFile): Promise<string> => {
-
-  const uploadDir = path.join(process.cwd(), "../asserts/documents");
+  console.log("------------------------------------------");
+  const uploadDir = path.join(process.cwd(), "./src/asserts/documents");
   const uniqueFilename = generateUniqueFilename(file.hapi.filename);
   const uploadPath = path.join(uploadDir, uniqueFilename);
 

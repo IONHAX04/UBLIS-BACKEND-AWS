@@ -289,7 +289,7 @@ export class DirectorRoutes implements IRoute {
           method: "POST",
           path: "/api/v1/director/addEmployeeDocument",
           config: {
-            // pre: [{ method: validateToken, assign: "token" }],
+            pre: [{ method: validateToken, assign: "token" }],
             handler: controller.addEmployeeData,
             description: "Add New Staff Or Employee Documents",
             tags: ["api", "Users"],

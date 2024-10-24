@@ -741,6 +741,8 @@ export class Director {
     request: any,
     response: Hapi.ResponseToolkit
   ): Promise<any> => {
+        const decodedToken = request.plugins.token.id;
+
     logger.info("Router-----store Register Form Data");
     try {
       logger.info(`GET URL REQ => ${request.url.href}`);
@@ -764,6 +766,7 @@ export class Director {
       entity = await this.resolver.addEmployeeDataV1({
         ...payload, // includes the rest of the form fields
         file, // Pass the file if needed
+        decodedToken
       });
 
       if (entity.success) {

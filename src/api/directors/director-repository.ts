@@ -320,19 +320,23 @@ export class DirectorRepository {
     }
   }
 
-  public async addEmployeeDataV1(userData: any): Promise<any> {
+  public async addEmployeeDataV1(
+    userData: any,
+    decodedToken: any
+  ): Promise<any> {
     try {
-      // Check if file exists in the userData payload
+      console.log("decodedToken", decodedToken);
       let fileResult;
       if (userData.file) {
         const file = userData.file;
 
         fileResult = await storeFile(file);
+        console.log("fileResult", fileResult);
       }
 
       const tokenData = {
         // id: refStId,
-        id: 26,
+        id: decodedToken,
       };
 
       const token = generateToken(tokenData, true);
@@ -344,7 +348,7 @@ export class DirectorRepository {
           data: fileResult,
           token: token,
         },
-        false
+        true
       );
     } catch (error) {
       const tokenData = {

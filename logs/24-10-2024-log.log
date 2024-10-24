@@ -833,3 +833,50 @@
 {"level":"info","message":"server running --- from server.ts","timestamp":"2024-10-24T10:49:21.152Z"}
 {"level":"info","message":"server running --- from server.ts","timestamp":"2024-10-24T10:49:30.433Z"}
 {"level":"info","message":"server running --- from server.ts","timestamp":"2024-10-24T10:49:36.213Z"}
+{"level":"info","message":"server running --- from server.ts","timestamp":"2024-10-24T10:49:54.719Z"}
+{"level":"info","message":"Router-----store Register Form Data","timestamp":"2024-10-24T10:59:51.909Z"}
+{"level":"info","message":"GET URL REQ => http://localhost:6200/api/v1/director/addEmployeeDocument","timestamp":"2024-10-24T10:59:51.911Z"}
+{"level":"info","message":"server running --- from server.ts","timestamp":"2024-10-24T11:07:04.691Z"}
+{"level":"info","message":"Router-----store Register Form Data","timestamp":"2024-10-24T11:07:05.573Z"}
+{"level":"info","message":"GET URL REQ => http://localhost:6200/api/v1/director/addEmployeeDocument","timestamp":"2024-10-24T11:07:05.574Z"}
+{"level":"info","message":"server running --- from server.ts","timestamp":"2024-10-24T11:07:29.730Z"}
+{"level":"info","message":"server running --- from server.ts","timestamp":"2024-10-24T11:07:37.751Z"}
+{"level":"info","message":"Router-----store Register Form Data","timestamp":"2024-10-24T11:07:38.322Z"}
+{"level":"info","message":"GET URL REQ => http://localhost:6200/api/v1/director/addEmployeeDocument","timestamp":"2024-10-24T11:07:38.323Z"}
+{"level":"info","message":"Router-----store Register Form Data","timestamp":"2024-10-24T11:09:14.891Z"}
+{"level":"info","message":"GET URL REQ => http://localhost:6200/api/v1/director/addEmployeeDocument","timestamp":"2024-10-24T11:09:14.892Z"}
+{"level":"info","message":"Uploaded file: wallpaperflare.com_wallpaper (3).jpg","timestamp":"2024-10-24T11:09:14.892Z"}
+{"level":"info","message":"File type: image/jpeg","timestamp":"2024-10-24T11:09:14.893Z"}
+{"level":"info","message":"server running --- from server.ts","timestamp":"2024-10-24T11:09:55.871Z"}
+{"level":"info","message":"server running --- from server.ts","timestamp":"2024-10-24T11:10:58.964Z"}
+{"level":"info","message":"Router-----store Register Form Data","timestamp":"2024-10-24T11:10:59.029Z"}
+{"level":"info","message":"GET URL REQ => http://localhost:6200/api/v1/director/addEmployeeDocument","timestamp":"2024-10-24T11:10:59.030Z"}
+{"level":"info","message":"Uploaded file: wallpaperflare.com_wallpaper (3).jpg","timestamp":"2024-10-24T11:10:59.031Z"}
+{"level":"info","message":"File type: image/jpeg","timestamp":"2024-10-24T11:10:59.032Z"}
+{"level":"info","message":"server running --- from server.ts","timestamp":"2024-10-24T11:11:13.911Z"}
+{"level":"info","message":"Router-----store Register Form Data","timestamp":"2024-10-24T11:11:16.898Z"}
+{"level":"info","message":"GET URL REQ => http://localhost:6200/api/v1/director/addEmployeeDocument","timestamp":"2024-10-24T11:11:16.899Z"}
+{"level":"info","message":"Uploaded file: wallpaperflare.com_wallpaper (3).jpg","timestamp":"2024-10-24T11:11:16.899Z"}
+{"level":"info","message":"File type: image/jpeg","timestamp":"2024-10-24T11:11:16.900Z"}
+{"level":"info","message":"server running --- from server.ts","timestamp":"2024-10-24T11:12:56.978Z"}
+{"level":"info","message":"Router-----store Register Form Data","timestamp":"2024-10-24T11:13:02.073Z"}
+{"level":"info","message":"GET URL REQ => http://localhost:6200/api/v1/director/addEmployeeDocument","timestamp":"2024-10-24T11:13:02.074Z"}
+{"level":"info","message":"Uploaded file: wallpaperflare.com_wallpaper (3).jpg","timestamp":"2024-10-24T11:13:02.074Z"}
+{"level":"info","message":"File type: image/jpeg","timestamp":"2024-10-24T11:13:02.075Z"}
+{"level":"info","message":"server running --- from server.ts","timestamp":"2024-10-24T11:14:13.997Z"}
+{"level":"info","message":"server running --- from server.ts","timestamp":"2024-10-24T11:14:23.206Z"}
+{"level":"info","message":"Router-----store Register Form Data","timestamp":"2024-10-24T11:14:23.774Z"}
+{"level":"info","message":"GET URL REQ => http://localhost:6200/api/v1/director/addEmployeeDocument","timestamp":"2024-10-24T11:14:23.775Z"}
+{"level":"info","message":"Uploaded file: wallpaperflare.com_wallpaper (3).jpg","timestamp":"2024-10-24T11:14:23.775Z"}
+{"level":"info","message":"File type: image/jpeg","timestamp":"2024-10-24T11:14:23.775Z"}
+{"level":"error","message":"Server not running... New route /api/v1/director/addEmployeeDocument conflicts with existing /api/v1/director/addEmployeeDocument","name":"AssertError","stack":"AssertError: New route /api/v1/director/addEmployeeDocument conflicts with existing /api/v1/director/addEmployeeDocument\n    at module.exports.internals.Segment.internals.Segment.add (C:\\Users\\VIJAY L\\Desktop\\ublis_backend-main\\node_modules\\@hapi\\call\\lib\\segment.js:47:14)\n    at exports.Router.internals.Router.internals.Router.add (C:\\Users\\VIJAY L\\Desktop\\ublis_backend-main\\node_modules\\@hapi\\call\\lib\\index.js:65:16)\n    at internals.Server._addRoute (C:\\Users\\VIJAY L\\Desktop\\ublis_backend-main\\node_modules\\@hapi\\hapi\\lib\\server.js:529:46)\n    at internals.Server.route (C:\\Users\\VIJAY L\\Desktop\\ublis_backend-main\\node_modules\\@hapi\\hapi\\lib\\server.js:518:22)\n    at C:\\Users\\VIJAY L\\Desktop\\ublis_backend-main\\src\\api\\routes.ts:227:14\n    at new Promise (<anonymous>)\n    at DirectorRoutes.<anonymous> (C:\\Users\\VIJAY L\\Desktop\\ublis_backend-main\\src\\api\\routes.ts:225:12)\n    at Generator.next (<anonymous>)\n    at C:\\Users\\VIJAY L\\Desktop\\ublis_backend-main\\src\\api\\routes.ts:8:71\n    at new Promise (<anonymous>)","timestamp":"2024-10-24T11:17:38.829Z"}
+{"actual":false,"code":"ERR_ASSERTION","expected":true,"generatedMessage":false,"level":"error","message":"Server not running... Cannot set payload settings on HEAD or GET request: GET /api/v1/director/addEmployeeDocument","operator":"==","stack":"AssertionError [ERR_ASSERTION]: Cannot set payload settings on HEAD or GET request: GET /api/v1/director/addEmployeeDocument\n    at new module.exports.internals.Route (C:\\Users\\VIJAY L\\Desktop\\ublis_backend-main\\node_modules\\@hapi\\hapi\\lib\\route.js:60:14)\n    at internals.Server._addRoute (C:\\Users\\VIJAY L\\Desktop\\ublis_backend-main\\node_modules\\@hapi\\hapi\\lib\\server.js:525:23)\n    at internals.Server.route (C:\\Users\\VIJAY L\\Desktop\\ublis_backend-main\\node_modules\\@hapi\\hapi\\lib\\server.js:518:22)\n    at C:\\Users\\VIJAY L\\Desktop\\ublis_backend-main\\src\\api\\routes.ts:227:14\n    at new Promise (<anonymous>)\n    at DirectorRoutes.<anonymous> (C:\\Users\\VIJAY L\\Desktop\\ublis_backend-main\\src\\api\\routes.ts:225:12)\n    at Generator.next (<anonymous>)\n    at C:\\Users\\VIJAY L\\Desktop\\ublis_backend-main\\src\\api\\routes.ts:8:71\n    at new Promise (<anonymous>)\n    at __awaiter (C:\\Users\\VIJAY L\\Desktop\\ublis_backend-main\\src\\api\\routes.ts:4:12)","timestamp":"2024-10-24T11:17:44.374Z"}
+{"level":"info","message":"server running --- from server.ts","timestamp":"2024-10-24T11:17:48.450Z"}
+{"level":"info","message":"server running --- from server.ts","timestamp":"2024-10-24T11:17:51.364Z"}
+{"level":"info","message":"server running --- from server.ts","timestamp":"2024-10-24T11:18:18.077Z"}
+{"level":"info","message":"server running --- from server.ts","timestamp":"2024-10-24T11:19:04.243Z"}
+{"level":"info","message":"server running --- from server.ts","timestamp":"2024-10-24T11:19:48.926Z"}
+{"level":"info","message":"server running --- from server.ts","timestamp":"2024-10-24T11:20:06.843Z"}
+{"level":"info","message":"server running --- from server.ts","timestamp":"2024-10-24T11:20:12.294Z"}
+{"level":"info","message":"server running --- from server.ts","timestamp":"2024-10-24T11:20:16.484Z"}
+{"level":"info","message":"server running --- from server.ts","timestamp":"2024-10-24T11:20:34.694Z"}
