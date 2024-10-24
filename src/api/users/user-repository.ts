@@ -1,5 +1,6 @@
-import { executeQuery } from "../../helper/db";
+import { executeQuery, getClient } from "../../helper/db";
 import { buildUpdateQuery, getChanges } from "../../helper/buildquery";
+import { PoolClient } from "pg";
 import {
   checkQuery,
   getCustomerCount,
@@ -373,13 +374,13 @@ export class UserRepository {
     }
   }
   public async userProfileDataV1(
-    userData: any
-    // decodedToken: number
+    userData: any,
+    decodedToken: number
   ): Promise<any> {
-    // const refStId = decodedToken;
+    const refStId = decodedToken;
     try {
       let profileData = {};
-      const Datas = await executeQuery(getProfileData, [78]);
+      const Datas = await executeQuery(getProfileData, [refStId]);
       const Data = Datas[0];
       let addresstype = false;
       if (Data.refAdAdd1Type == 3) {
@@ -492,7 +493,7 @@ export class UserRepository {
       profileData = { ...profileData, modeOfCommunication };
 
       const tokenData = {
-        id: 78,
+        id: refStId,
       };
 
       const token = generateToken(tokenData, true);
@@ -510,20 +511,24 @@ export class UserRepository {
       throw error;
     }
   }
-  public async userProfileUpdateV1(userData: any): Promise<any> {
-    console.log("userData", userData);
-    const refStId = 78;
+  public async userProfileUpdateV1(
+    userData: any,
+    decodedToken: number
+  ): Promise<any> {
+    const client: PoolClient = await getClient();
+    const refStId = decodedToken;
 
     try {
+      await client.query("BEGIN");
       for (const section in userData) {
         if (userData.hasOwnProperty(section)) {
           let tableName: string;
-          let updatedData;
+          let updatedData, transTypeId;
           let oldData;
-          let changes = {}; // To store any detected changes
 
           switch (section) {
             case "address":
+              transTypeId = 9;
               let refAdAdd1Type: number = 3;
               let refAdAdd2Type: number = 0;
 
@@ -531,55 +536,102 @@ export class UserRepository {
                 refAdAdd1Type = 1;
                 refAdAdd2Type = 2;
               }
+
+              if (userData.olddata.addresstype === false) {
+                refAdAdd1Type = 1;
+                refAdAdd2Type = 2;
+              }
               tableName = "refUserAddress";
 
               updatedData = userData.address;
               updatedData = { ...updatedData, refAdAdd1Type, refAdAdd2Type };
+              oldData = userData.olddata;
+              oldData = { ...oldData, refAdAdd1Type, refAdAdd2Type };
+
               delete updatedData.addresstype;
 
-              oldData = userData.oldData.address;
               break;
 
             case "personalData":
-              tableName = "refUserPersonalData";
+              transTypeId = 10;
+              tableName = "users";
               updatedData = userData.personalData;
-              oldData = userData.oldData.personalData;
+              oldData = userData.olddata;
               break;
 
             case "generalhealth":
-              tableName = "refUserHealthData";
+              transTypeId = 11;
+              tableName = "refGeneralHealth";
               updatedData = userData.generalhealth;
-              oldData = userData.oldData.generalhealth;
+              oldData = userData.olddata;
               break;
 
             case "presentHealth":
-              tableName = "refUserPresentHealth";
               updatedData = userData.presentHealth;
-              oldData = userData.oldData.presentHealth;
+
+              const refPerHealthId = JSON.stringify(
+                updatedData.refPresentHealth
+              );
+              transTypeId = 12;
+              tableName = "refGeneralHealth";
+              updatedData = { ...updatedData, refPerHealthId };
+              delete updatedData.refPresentHealth;
+              console.log("updatedData line-----580", updatedData);
+
+              oldData = userData.olddata;
               break;
 
             case "communication":
+              transTypeId = 13;
               tableName = "refUserCommunication";
               updatedData = userData.communication;
-              oldData = userData.oldData.communication;
+              oldData = userData.olddata;
               break;
 
             default:
               continue;
           }
 
-          // Compare old and updated data to find changes
-          changes = getChanges(updatedData, oldData);
-          console.log("changes", changes);
-
-          // Prepare and execute the update query
           const identifier = { column: "refStId", value: refStId };
+          console.log("identifier", identifier);
+          const changes = getChanges(updatedData, oldData);
+          console.log("changes line -------584", changes);
+          console.log("updatedData line--------585", updatedData);
+
           const { updateQuery, values } = buildUpdateQuery(
             tableName,
             updatedData,
             identifier
           );
-          await executeQuery(updateQuery, values);
+
+          const userResult = await client.query(updateQuery, values);
+
+          if (!userResult.rowCount) {
+            throw new Error("Failed to update the profile data.");
+          }
+
+          for (const key in changes) {
+            if (changes.hasOwnProperty(key)) {
+              const change = changes[key];
+
+              const parasHistory = [
+                transTypeId,
+                changes[key],
+                refStId,
+                new Date().toLocaleString(),
+                "user",
+              ];
+              const queryResult = await client.query(
+                updateHistoryQuery1,
+                parasHistory
+              );
+              if (!userResult.rowCount) {
+                throw new Error("Failed to update the History.");
+              }
+
+              await client.query("COMMIT");
+            }
+          }
         }
       }
 
@@ -589,14 +641,21 @@ export class UserRepository {
       return encrypt(
         {
           success: true,
-          message: "Profile data updated successfully",
+          message: "Profile data updated  successfully",
           token: token,
         },
         false
       );
     } catch (error) {
-      console.error("Error in Profile Data Update:", error);
-      throw error;
+      await client.query("ROLLBACK");
+
+      const results = {
+        success: false,
+        message: "Error in updating the profile data",
+      };
+      return encrypt(results, false);
+    } finally {
+      client.release();
     }
   }
 }
