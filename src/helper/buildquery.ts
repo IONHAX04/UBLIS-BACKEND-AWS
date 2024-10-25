@@ -35,8 +35,9 @@ const getChanges = (
   updatedData: any,
   oldData: any
 ): { [key: string]: Change } => {
+  console.log("updatedData", updatedData);
+  console.log("oldData", oldData);
   const changes: { [key: string]: Change } = {};
-
   for (const key in updatedData) {
     if (updatedData.hasOwnProperty(key)) {
       if (updatedData[key] !== oldData[key]) {

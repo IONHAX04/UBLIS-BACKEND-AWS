@@ -154,13 +154,14 @@ export class ProfileRepository {
         insertCommunicationData,
         parasCommunication
       );
+
       if (!userResult2.rowCount) {
+        console.log();
+
         throw new Error(
           "Failed to insert Communication  data into the refUserCommunication table."
         );
       }
-
-      // Step 2: Insert address data into the refUserAddress table
 
       let refAdAdd1Type: number = 1;
       let refAdAdd2Type: number = 2;
@@ -171,7 +172,7 @@ export class ProfileRepository {
         userData.address.refAdArea2 = "";
         userData.address.refAdCity2 = "";
         userData.address.refAdState2 = "";
-        userData.address.refAdPincode2 = "";
+        userData.address.refAdPincode2;
       }
 
       const paramsAddress = [
@@ -193,6 +194,7 @@ export class ProfileRepository {
         insertProfileAddressQuery,
         paramsAddress
       );
+
       if (!userResult3.rowCount) {
         throw new Error(
           "Failed to insert address data into the refUserAddress table."
@@ -288,6 +290,7 @@ export class ProfileRepository {
 
       const params = [refStId];
       const profileResult = await executeQuery(fetchProfileData, params);
+      console.log("profileResult", profileResult);
 
       if (!profileResult.length) {
         throw new Error("Profile data not found for refStId: " + refStId);
@@ -296,10 +299,10 @@ export class ProfileRepository {
       function formatDate(isoDate: any) {
         const date = new Date(isoDate); // Create a new Date object
         const day = String(date.getDate()).padStart(2, "0"); // Get the day and pad with zero if needed
-        const month = String(date.getMonth() + 1).padStart(2, "0"); // Get the month (0-based) and pad with zero
-        const year = date.getFullYear(); // Get the full year
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const year = date.getFullYear();
 
-        return `${year}-${month}-${day}`; // Return formatted date
+        return `${year}-${month}-${day}`;
       }
 
       const profileData = {
@@ -311,6 +314,7 @@ export class ProfileRepository {
         phone: profileResult[0].refCtMobile,
         age: profileResult[0].refStAge,
       };
+      console.log("profileData", profileData);
 
       const timingResult = await executeQuery(fetchPreferableTiming, []);
       const preferableTiming = timingResult.map((row: any, index: number) => {

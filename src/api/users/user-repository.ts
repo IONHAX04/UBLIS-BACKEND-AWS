@@ -58,9 +58,7 @@ export class UserRepository {
         const userData = await executeQuery(selectUserData, refStId);
 
         const signinCount = await executeQuery(getSingInCount, refStId);
-        console.log("signinCount", signinCount);
         const followUpCount = await executeQuery(getFollowUpCount, refStId);
-        console.log("followUpCount", followUpCount);
         const status2 =
           followUpCount.length > 0 ? followUpCount[0].status : null;
 
@@ -262,9 +260,7 @@ export class UserRepository {
       const user = await executeQuery(selectUserData, id);
 
       const signinCount = await executeQuery(getSingInCount, id);
-      console.log("signinCount", signinCount);
       const followUpCount = await executeQuery(getFollowUpCount, id);
-      console.log("followUpCount", followUpCount);
       const status2 = followUpCount.length > 0 ? followUpCount[0].status : null;
 
       const getRegisterCount = await executeQuery(getRegisterResult, id);
@@ -309,7 +305,6 @@ export class UserRepository {
   ): Promise<any> {
     try {
       const refStId = decodedToken;
-      console.log("refStId", refStId);
       const id = [refStId];
       const user = await executeQuery(selectUserData, id);
       let profileFile;
@@ -560,7 +555,6 @@ export class UserRepository {
         if (userData.hasOwnProperty(section)) {
           let tableName: string;
           let updatedData, transTypeId, newData, olddata, getUserData;
-
           let oldData;
           switch (section) {
             case "address":
@@ -608,9 +602,21 @@ export class UserRepository {
               );
               newData = await executeQuery(getUserData, [refStId]);
 
-              olddata = newData[0];
-              userData = { ...userData, olddata };
+              function formatDate(isoDate: any) {
+                const date = new Date(isoDate);
+                const day = String(date.getDate()).padStart(2, "0");
+                const month = String(date.getMonth() + 1).padStart(2, "0");
+                const year = date.getFullYear();
 
+                return `${year}-${month}-${day}`;
+              }
+
+              olddata = newData[0];
+              olddata.refStDOB = formatDate(olddata.refStDOB);
+              userData = { ...userData, olddata };
+              userData.personalData.refStDOB = formatDate(
+                userData.personalData.refStDOB
+              );
               updatedData = userData.personalData;
               oldData = userData.olddata;
               break;
@@ -632,7 +638,6 @@ export class UserRepository {
 
             case "presentHealth":
               updatedData = userData.presentHealth;
-
               const refPerHealthId = JSON.stringify(
                 updatedData.refPresentHealth
               );
@@ -645,10 +650,12 @@ export class UserRepository {
               newData = await executeQuery(getUserData, [refStId]);
 
               olddata = newData[0];
+
+              olddata.refPerHealthId = JSON.stringify(olddata.refPerHealthId);
+
               userData = { ...userData, olddata };
               updatedData = { ...updatedData, refPerHealthId };
               delete updatedData.refPresentHealth;
-              // console.log("updatedData line-----580", updatedData);
 
               oldData = userData.olddata;
               break;
