@@ -216,6 +216,7 @@ export class DirectorResolver {
     user_data: any,
     domain_code: any
   ): Promise<any> {
+    console.log("user_data line----------219", user_data);
     return await this.DirectorRepository.addEmployeeDataV1(
       user_data,
       domain_code

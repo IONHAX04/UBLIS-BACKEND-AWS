@@ -9,6 +9,8 @@ import {
 import logger from "../helper/logger";
 import { decodeToken } from "../helper/token";
 
+import { storeFile } from "../helper/storage";
+
 export class UserController {
   public resolver: any;
 
@@ -741,7 +743,7 @@ export class Director {
     request: any,
     response: Hapi.ResponseToolkit
   ): Promise<any> => {
-        const decodedToken = request.plugins.token.id;
+    const decodedToken = request.plugins.token.id;
 
     logger.info("Router-----store Register Form Data");
     try {
@@ -754,19 +756,24 @@ export class Director {
       // Assuming the file field is named 'file'
       const file = payload.file;
 
+      let filePath: string | undefined;
+
       if (file) {
-        // Log the file details (can be stream or Buffer based on config)
+        // Log the file details
         logger.info(`Uploaded file: ${file.hapi.filename}`);
         logger.info(`File type: ${file.hapi.headers["content-type"]}`);
+
+        // Store the file and get the path
+        filePath = await storeFile(file);
+      } else {
+        logger.warn("No file uploaded.");
       }
 
-      let entity;
-
       // Process the remaining form data
-      entity = await this.resolver.addEmployeeDataV1({
+      const entity = await this.resolver.addEmployeeDataV1({
         ...payload, // includes the rest of the form fields
-        file, // Pass the file if needed
-        decodedToken
+        filePath, // Pass the stored file path if needed
+        decodedToken// decodedToken
       });
 
       if (entity.success) {
@@ -786,6 +793,56 @@ export class Director {
         .code(500);
     }
   };
+
+  // public addEmployeeData = async (
+  //   request: any,
+  //   response: Hapi.ResponseToolkit
+  // ): Promise<any> => {
+  //   // const decodedToken = request.plugins.token.id;
+
+  //   logger.info("Router-----store Register Form Data");
+  //   try {
+  //     logger.info(`GET URL REQ => ${request.url.href}`);
+  //     const domainCode = request.headers.domain_code || "";
+
+  //     // If file is uploaded via form-data, it will be in request.payload
+  //     const payload = request.payload;
+
+  //     // Assuming the file field is named 'file'
+  //     const file = payload.file;
+
+  //     if (file) {
+  //       // Log the file details (can be stream or Buffer based on config)
+  //       logger.info(`Uploaded file: ${file.hapi.filename}`);
+  //       logger.info(`File type: ${file.hapi.headers["content-type"]}`);
+  //     }
+
+  //     let entity;
+
+  //     // Process the remaining form data
+  //     entity = await this.resolver.addEmployeeDataV1({
+  //       ...payload, // includes the rest of the form fields
+  //       file, // Pass the file if needed
+  //       // decodedToken
+  //     });
+
+  //     if (entity.success) {
+  //       return response.response(entity).code(200);
+  //     }
+  //     return response.response(entity).code(200);
+  //   } catch (error) {
+  //     logger.error("Error in Adding New Employee", error);
+  //     return response
+  //       .response({
+  //         success: false,
+  //         message:
+  //           error instanceof Error
+  //             ? error.message
+  //             : "An unknown error occurred",
+  //       })
+  //       .code(500);
+  //   }
+  // };
 }
 export class userDashBoard {
   public resolver: any;

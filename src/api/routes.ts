@@ -293,12 +293,12 @@ export class DirectorRoutes implements IRoute {
             handler: controller.addEmployeeData,
             description: "Add New Staff Or Employee Documents",
             tags: ["api", "Users"],
-            auth: false, // Set to true if authentication is needed
+            auth: false,
             payload: {
-              maxBytes: 10485760, // 10 MB limit for file uploads
-              output: "stream", // To handle file streams
-              parse: true, // Automatically parse multipart form data
-              multipart: true, // Enable multipart form data
+              maxBytes: 10485760,
+              output: "stream",
+              parse: true,
+              multipart: true,
             },
           },
         },

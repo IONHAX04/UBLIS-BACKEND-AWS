@@ -1,6 +1,8 @@
 import { executeQuery, getClient } from "../../helper/db";
 import { buildUpdateQuery, getChanges } from "../../helper/buildquery";
 import { PoolClient } from "pg";
+import path from "path";
+import { viewFile } from "../../helper/storage";
 import {
   checkQuery,
   getCustomerCount,
@@ -309,6 +311,21 @@ export class UserRepository {
       console.log("refStId", refStId);
       const id = [refStId];
       const user = await executeQuery(selectUserData, id);
+      let profileFile;
+      if (user[0].refProfilePath) {
+        const profileFilePath = user[0].refProfilePath;
+        try {
+          const fileBuffer = await viewFile(profileFilePath);
+          const fileBase64 = fileBuffer.toString("base64"); // Convert file to base64 to pass in response
+          profileFile = {
+            filename: path.basename(profileFilePath),
+            content: fileBase64,
+            contentType: "image/jpeg",
+          };
+        } catch (err) {
+          console.error("Error retrieving profile file:", err);
+        }
+      }
 
       const tokenData = {
         id: refStId,
@@ -323,6 +340,7 @@ export class UserRepository {
           message: "user Validate Token",
           token: token,
           data: user,
+          profileFile: profileFile,
         },
         true
       );
@@ -428,6 +446,23 @@ export class UserRepository {
       };
 
       profileData = { ...profileData, personalData };
+
+      let profileFile = null;
+      if (Data.refProfilePath) {
+        const profileFilePath = Data.refProfilePath;
+        try {
+          const fileBuffer = await viewFile(profileFilePath);
+          const fileBase64 = fileBuffer.toString("base64"); // Convert file to base64 to pass in response
+          profileFile = {
+            filename: path.basename(profileFilePath),
+            content: fileBase64,
+            contentType: "image/jpeg", // Assume JPEG, adjust if necessary
+          };
+        } catch (err) {
+          console.error("Error retrieving profile file:", err);
+        }
+      }
+      profileData = { ...profileData, profileFile }; // Add file to profile data
 
       const generalhealth = {
         refHeight: Data.refHeight,

@@ -85,3 +85,8 @@ SET
 WHERE "refStId" = $1
 RETURNING *;
 `;
+
+export const updateUserProfile = `UPDATE public."users" SET "refProfilePath"=$1 WHERE "refStId"=$2
+RETURNING *;`;
+
+export const getUserProfile = `SELECT "refProfilePath" FROM public.users WHERE "refStId"=$1;`;

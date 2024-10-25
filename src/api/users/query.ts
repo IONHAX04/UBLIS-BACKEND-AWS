@@ -50,7 +50,7 @@ export const selectUserByEmailQuery = `
 export const selectUserByUsername =
   'SELECT * FROM public."refUsersDomain" WHERE "refUserName" = $1;';
 
-export const selectUserData = `SELECT u."refUtId",u."refStFName",u."refStLName",ud."refUserName"
+export const selectUserData = `SELECT u."refUtId",u."refStFName",u."refStLName",ud."refUserName",u."refProfilePath"
 FROM public."users" u
 JOIN
 	public."refUsersDomain" ud

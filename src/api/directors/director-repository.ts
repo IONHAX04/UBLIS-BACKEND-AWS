@@ -1,6 +1,8 @@
 import { executeQuery, getClient } from "../../helper/db";
 import { v4 as uuidv4 } from "uuid";
 import bcrypt from "bcryptjs";
+import { viewFile, deleteFile, storeFile } from "../../helper/storage";
+import path from "path";
 
 import {
   queryStaffDetails,
@@ -16,10 +18,11 @@ import {
   fetchFormSubmitedData,
   updateHistoryQuery1,
   updateUserType,
+  updateUserProfile,
+  getUserProfile,
 } from "./query";
 import { encrypt } from "../../helper/encrypt";
 import { generateToken, decodeToken } from "../../helper/token";
-import { storeFile } from "../../helper/storage";
 
 export class DirectorRepository {
   public async directorStaffPgV1(userData: any): Promise<any> {
@@ -324,47 +327,69 @@ export class DirectorRepository {
     userData: any,
     decodedToken: any
   ): Promise<any> {
+    const refStId = userData.decodedToken;
+    const tokenData = {
+      id: refStId,
+    };
+    const token = generateToken(tokenData, true);
     try {
-      console.log("decodedToken", decodedToken);
-      let fileResult;
-      if (userData.file) {
-        const file = userData.file;
+      const params = [userData.filePath, refStId];
+      const getProfileUrl = await executeQuery(getUserProfile, [refStId]); // Get old file path from DB
 
-        fileResult = await storeFile(file);
-        console.log("fileResult", fileResult);
+      // Remove the old file if a profile URL exists
+      if (getProfileUrl.length > 0 && getProfileUrl[0].refProfilePath) {
+        const oldFilePath = getProfileUrl[0].refProfilePath;
+        try {
+          await deleteFile(oldFilePath);
+        } catch (err) {
+          return encrypt(
+            {
+              success: false,
+              message: "Failed to Change or Upload the Profile Image",
+              token: token,
+            },
+            true
+          );
+        }
       }
 
-      const tokenData = {
-        // id: refStId,
-        id: decodedToken,
-      };
+      // Store the new file as usual
+      const profileUrl = await executeQuery(updateUserProfile, params);
+      let profileFile;
 
-      const token = generateToken(tokenData, true);
+      if (profileUrl.length > 0) {
+        const profileFilePath = userData.filePath; // New file path
+        try {
+          const fileBuffer = await viewFile(profileFilePath);
+          const fileBase64 = fileBuffer.toString("base64"); // Convert file to base64 for response
+          profileFile = {
+            filename: path.basename(profileFilePath),
+            content: fileBase64,
+            contentType: "image/jpeg", // Assuming JPEG, modify if necessary
+          };
+        } catch (err) {
+          console.error("Error retrieving profile file:");
+          profileFile = null;
+        }
+      }
 
       return encrypt(
         {
           success: true,
-          message: "userRegisterPageData",
-          data: fileResult,
+          message: "File Stored Successfully",
           token: token,
+          filePath: profileFile || "No profile file available",
         },
         true
       );
     } catch (error) {
-      const tokenData = {
-        // id: refStId,
-        id: 26,
-      };
-
-      const token = generateToken(tokenData, true);
-
       return encrypt(
         {
           success: false,
           message: "Error in Storing The Staff Documents",
           token: token,
         },
-        false
+        true
       );
     }
   }
