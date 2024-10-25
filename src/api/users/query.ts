@@ -114,7 +114,8 @@ export const fetchPresentHealthProblem = `
 `;
 
 export const getCommunicationType = `
-  SELECT * FROM public."refCommType"
+  SELECT "refCtId", INITCAP("refCtText") AS "refCtText"
+FROM public."refCommType";
 `;
 
 export const updateProfileAddressQuery = `
@@ -142,3 +143,5 @@ export const updateHistoryQuery1 = `
   ) VALUES ($1, $2, $3, $4, $5)
   RETURNING *;
 `;
+
+export const getUserData = `SELECT * FROM public."{{tableName}}" WHERE "refStId" = $1;`;

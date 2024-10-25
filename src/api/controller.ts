@@ -773,7 +773,7 @@ export class Director {
       const entity = await this.resolver.addEmployeeDataV1({
         ...payload, // includes the rest of the form fields
         filePath, // Pass the stored file path if needed
-        decodedToken// decodedToken
+        decodedToken, // decodedToken
       });
 
       if (entity.success) {

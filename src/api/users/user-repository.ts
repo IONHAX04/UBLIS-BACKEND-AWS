@@ -23,6 +23,7 @@ import {
   updateProfileAddressQuery,
   updateHistoryQuery1,
 } from "./query";
+import { getUserData as rawGetUserDataQuery } from "./query";
 import { encrypt } from "../../helper/encrypt";
 import { v4 as uuidv4 } from "uuid";
 import bcrypt from "bcryptjs";
@@ -551,18 +552,30 @@ export class UserRepository {
     decodedToken: number
   ): Promise<any> {
     const client: PoolClient = await getClient();
-    const refStId = decodedToken;
+    const refStId = decodedToken || 65;
 
     try {
       await client.query("BEGIN");
       for (const section in userData) {
         if (userData.hasOwnProperty(section)) {
           let tableName: string;
-          let updatedData, transTypeId;
-          let oldData;
+          let updatedData, transTypeId, newData, olddata, getUserData;
 
+          let oldData;
           switch (section) {
             case "address":
+              tableName = "refUserAddress";
+
+              getUserData = rawGetUserDataQuery.replace(
+                "{{tableName}}",
+                tableName
+              );
+              newData = await executeQuery(getUserData, [refStId]);
+
+              olddata = newData[0];
+
+              userData = { ...userData, olddata };
+
               transTypeId = 9;
               let refAdAdd1Type: number = 3;
               let refAdAdd2Type: number = 0;
@@ -576,7 +589,6 @@ export class UserRepository {
                 refAdAdd1Type = 1;
                 refAdAdd2Type = 2;
               }
-              tableName = "refUserAddress";
 
               updatedData = userData.address;
               updatedData = { ...updatedData, refAdAdd1Type, refAdAdd2Type };
@@ -590,6 +602,15 @@ export class UserRepository {
             case "personalData":
               transTypeId = 10;
               tableName = "users";
+              getUserData = rawGetUserDataQuery.replace(
+                "{{tableName}}",
+                tableName
+              );
+              newData = await executeQuery(getUserData, [refStId]);
+
+              olddata = newData[0];
+              userData = { ...userData, olddata };
+
               updatedData = userData.personalData;
               oldData = userData.olddata;
               break;
@@ -597,6 +618,14 @@ export class UserRepository {
             case "generalhealth":
               transTypeId = 11;
               tableName = "refGeneralHealth";
+              getUserData = rawGetUserDataQuery.replace(
+                "{{tableName}}",
+                tableName
+              );
+              newData = await executeQuery(getUserData, [refStId]);
+
+              olddata = newData[0];
+              userData = { ...userData, olddata };
               updatedData = userData.generalhealth;
               oldData = userData.olddata;
               break;
@@ -609,9 +638,17 @@ export class UserRepository {
               );
               transTypeId = 12;
               tableName = "refGeneralHealth";
+              getUserData = rawGetUserDataQuery.replace(
+                "{{tableName}}",
+                tableName
+              );
+              newData = await executeQuery(getUserData, [refStId]);
+
+              olddata = newData[0];
+              userData = { ...userData, olddata };
               updatedData = { ...updatedData, refPerHealthId };
               delete updatedData.refPresentHealth;
-              console.log("updatedData line-----580", updatedData);
+              // console.log("updatedData line-----580", updatedData);
 
               oldData = userData.olddata;
               break;
@@ -619,6 +656,14 @@ export class UserRepository {
             case "communication":
               transTypeId = 13;
               tableName = "refUserCommunication";
+              getUserData = rawGetUserDataQuery.replace(
+                "{{tableName}}",
+                tableName
+              );
+              newData = await executeQuery(getUserData, [refStId]);
+
+              olddata = newData[0];
+              userData = { ...userData, olddata };
               updatedData = userData.communication;
               oldData = userData.olddata;
               break;
@@ -628,10 +673,8 @@ export class UserRepository {
           }
 
           const identifier = { column: "refStId", value: refStId };
-          console.log("identifier", identifier);
           const changes = getChanges(updatedData, oldData);
-          console.log("changes line -------584", changes);
-          console.log("updatedData line--------585", updatedData);
+          console.log("\n\n\n\n\n\nchanges line --------------677", changes);
 
           const { updateQuery, values } = buildUpdateQuery(
             tableName,
@@ -679,7 +722,7 @@ export class UserRepository {
           message: "Profile data updated  successfully",
           token: token,
         },
-        false
+        true
       );
     } catch (error) {
       await client.query("ROLLBACK");
