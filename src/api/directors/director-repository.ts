@@ -400,7 +400,7 @@ export class DirectorRepository {
     userData: any,
     decodedToken: number
   ): Promise<any> {
-    const staffId = decodedToken;
+    const staffId = decodedToken || 1;
     let token = {
       id: staffId,
     };
@@ -430,7 +430,7 @@ export class DirectorRepository {
     userData: any,
     decodedToken: number
   ): Promise<any> {
-    const staffId = decodedToken;
+    const staffId = decodedToken || 1;
     const id = userData.refStId;
     let token = {
       id: staffId,
@@ -461,7 +461,7 @@ export class DirectorRepository {
     userData: any,
     decodedToken: number
   ): Promise<any> {
-    const staffId = decodedToken;
+    const staffId = decodedToken || 1;
     let token = {
       id: 3,
     };
