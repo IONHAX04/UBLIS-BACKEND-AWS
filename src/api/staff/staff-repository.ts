@@ -16,6 +16,7 @@ import {
   getStaffCount,
   getRecentFormData,
   fetchClientData1,
+  getUpDateNotification,
 } from "./query";
 import { encrypt } from "../../helper/encrypt";
 import { generateToken, decodeToken } from "../../helper/token";
@@ -27,7 +28,7 @@ export class StaffRepository {
   ): Promise<any> {
     try {
       // const refStId = decodedToken;
-      const refStId = 3;
+      const refStId = 1;
       const userType = await executeQuery(getUserType, [refStId]);
       const refUserType = userType[0];
       let refDashBoardData = {};
@@ -95,7 +96,32 @@ export class StaffRepository {
         }
       }
 
-      
+      let notificationData = {};
+
+      switch (refUserType.refUtId) {
+        case 5: {
+          console.log("This Notification For Student");
+          break;
+        }
+        case 7: {
+          // Director
+          console.log("This Notification For Director");
+          break;
+        }
+        case 8: {
+          console.log("This Notification For Finance");
+          break;
+        }
+        case 10: {
+          console.log("This Notification For Instructor");
+          break;
+        }
+        case 11: {
+          console.log("This Notification For Therapist");
+          break;
+        }
+      }
+      refDashBoardData = { ...refDashBoardData, notificationData };
 
       const tokenData = {
         id: refStId,

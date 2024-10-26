@@ -226,3 +226,12 @@ JOIN (
 WHERE u."refUtId" = 2
 LIMIT 5;
 `;
+
+export const getUpDateNotification = `SELECT th."transId",th."transTypeId",th."transData",th."transTime",th."refStId",th."refUpdatedBy",u."refSCustId"
+FROM public."refUserTxnHistory" th
+LEFT JOIN public."refNotification" rn
+ON CAST(th."transId" AS INTEGER) = rn."transId"
+JOIN public."users" u
+ON CAST(th."refStId" AS INTEGER) = u."refStId"
+WHERE th."transTypeId" IN (9, 10, 11, 12, 13, 14, 15) 
+  AND (rn."refRead" IS NULL OR rn."refRead" != true);`;

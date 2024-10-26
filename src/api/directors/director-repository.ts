@@ -20,6 +20,9 @@ import {
   updateUserType,
   updateUserProfile,
   getUserProfile,
+  getUpDateList,
+  userUpdateAuditData,
+  userAuditDataRead,
 } from "./query";
 import { encrypt } from "../../helper/encrypt";
 import { generateToken, decodeToken } from "../../helper/token";
@@ -390,6 +393,111 @@ export class DirectorRepository {
           token: token,
         },
         true
+      );
+    }
+  }
+  public async userAuditListV1(
+    userData: any,
+    decodedToken: number
+  ): Promise<any> {
+    const staffId = decodedToken;
+    let token = {
+      id: staffId,
+    };
+    try {
+      const getList = await executeQuery(getUpDateList, []);
+      return encrypt(
+        {
+          success: true,
+          message: "User Update Audit list Data is Send Successfully",
+          token: token,
+          data: getList,
+        },
+        false
+      );
+    } catch (error) {
+      return encrypt(
+        {
+          success: false,
+          message: "Error in User Update Audit list Data Sending",
+          token: token,
+        },
+        false
+      );
+    }
+  }
+  public async userUpdateAuditListV1(
+    userData: any,
+    decodedToken: number
+  ): Promise<any> {
+    const staffId = decodedToken;
+    const id = userData.refStId;
+    let token = {
+      id: staffId,
+    };
+    try {
+      const getList = await executeQuery(userUpdateAuditData, [id]);
+      return encrypt(
+        {
+          success: true,
+          message: "User Update Audit Page Data is Send Successfully",
+          token: token,
+          data: getList,
+        },
+        false
+      );
+    } catch (error) {
+      return encrypt(
+        {
+          success: false,
+          message: "Error in User Update Audit Data Sending",
+          token: token,
+        },
+        false
+      );
+    }
+  }
+  public async userUpdateAuditListReadV1(
+    userData: any,
+    decodedToken: number
+  ): Promise<any> {
+    const staffId = decodedToken;
+    let token = {
+      id: 3,
+    };
+    try {
+      console.log("userData", userData.transId[0]);
+
+      for (let i = 0; i < userData.transId.length; i++) {
+        const getList = await executeQuery(userAuditDataRead, [
+          userData.transId[i],
+          true,
+          staffId,
+        ]);
+        if (!getList) {
+          console.log(
+            "the mark as read for notification is failed to update for",
+            userData.transId[i]
+          );
+        }
+      }
+
+      return encrypt(
+        {
+          success: true,
+          message: "User Audit Notification Is Marked as Read Successfully",
+          token: token,
+        },
+        false
+      );
+    } catch (error) {
+      return encrypt(
+        {
+          success: false,
+          message: "Error in updating the notification as read",
+          token: token,
+        },
+        false
       );
     }
   }

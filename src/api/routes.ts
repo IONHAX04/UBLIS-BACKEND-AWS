@@ -302,6 +302,36 @@ export class DirectorRoutes implements IRoute {
             },
           },
         },
+        {
+          method: "GET",
+          path: "/api/v1/director/userAuditList",
+          config: {
+            pre: [{ method: validateToken, assign: "token" }],
+            handler: controller.userAuditList,
+            description: "sending user Details to user Audit page ",
+            auth: false,
+          },
+        },
+        {
+          method: "POST",
+          path: "/api/v1/director/userUpdateAuditList",
+          config: {
+            pre: [{ method: validateToken, assign: "token" }],
+            handler: controller.userUpdateAuditList,
+            description: "sending user Details to user Audit page ",
+            auth: false,
+          },
+        },
+        {
+          method: "POST",
+          path: "/api/v1/director/userUpdateAuditListRead",
+          config: {
+            pre: [{ method: validateToken, assign: "token" }],
+            handler: controller.userUpdateAuditListRead,
+            description: "sending user Details to user Audit page ",
+            auth: false,
+          },
+        },
       ]);
       resolve(true);
     });

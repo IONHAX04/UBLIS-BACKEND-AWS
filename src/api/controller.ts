@@ -617,6 +617,7 @@ export class Director {
         .code(500);
     }
   };
+
   public therapistApprovalData = async (
     request: any,
     response: Hapi.ResponseToolkit
@@ -794,6 +795,97 @@ export class Director {
     }
   };
 
+  public userAuditList = async (
+    request: any,
+    response: Hapi.ResponseToolkit
+  ): Promise<any> => {
+    const decodedToken = request.plugins.token.id;
+    try {
+      logger.info(`GET URL REQ => ${request.url.href}`);
+      const domainCode = request.headers.domain_code || "";
+      const entity = await this.resolver.userAuditListV1(
+        request.payload,
+        decodedToken
+      );
+
+      if (entity.success) {
+        return response.response(entity).code(200);
+      }
+      return response.response(entity).code(200);
+    } catch (error) {
+      logger.error("Error in Sending Data:", error);
+      return response
+        .response({
+          success: false,
+          message:
+            error instanceof Error
+              ? error.message
+              : "An unknown error occurred",
+        })
+        .code(500);
+    }
+  };
+  public userUpdateAuditList = async (
+    request: any,
+    response: Hapi.ResponseToolkit
+  ): Promise<any> => {
+    const decodedToken = request.plugins.token.id;
+    try {
+      logger.info(`GET URL REQ => ${request.url.href}`);
+      const domainCode = request.headers.domain_code || "";
+      const entity = await this.resolver.userUpdateAuditListV1(
+        request.payload,
+        decodedToken
+      );
+
+      if (entity.success) {
+        return response.response(entity).code(200);
+      }
+      return response.response(entity).code(200);
+    } catch (error) {
+      logger.error("Error in Sending Data:", error);
+      return response
+        .response({
+          success: false,
+          message:
+            error instanceof Error
+              ? error.message
+              : "An unknown error occurred",
+        })
+        .code(500);
+    }
+  };
+  public userUpdateAuditListRead = async (
+    request: any,
+    response: Hapi.ResponseToolkit
+  ): Promise<any> => {
+    const decodedToken = request.plugins.token.id;
+    try {
+      logger.info(`GET URL REQ => ${request.url.href}`);
+      const domainCode = request.headers.domain_code || "";
+      const entity = await this.resolver.userUpdateAuditListReadV1(
+        request.payload,
+        decodedToken
+      );
+
+      if (entity.success) {
+        return response.response(entity).code(200);
+      }
+      return response.response(entity).code(200);
+    } catch (error) {
+      logger.error("Error in Sending Data:", error);
+      return response
+        .response({
+          success: false,
+          message:
+            error instanceof Error
+              ? error.message
+              : "An unknown error occurred",
+        })
+        .code(500);
+    }
+  };
+
   // public addEmployeeData = async (
   //   request: any,
   //   response: Hapi.ResponseToolkit
@@ -910,6 +1002,7 @@ export class userDashBoard {
         .code(500);
     }
   };
+
   public userProfileUpdate = async (
     request: any,
     response: Hapi.ResponseToolkit

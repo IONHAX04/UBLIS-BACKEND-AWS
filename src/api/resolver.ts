@@ -222,4 +222,28 @@ export class DirectorResolver {
       domain_code
     );
   }
+  public async userAuditListV1(user_data: any, domain_code: any): Promise<any> {
+    return await this.DirectorRepository.userAuditListV1(
+      user_data,
+      domain_code
+    );
+  }
+  public async userUpdateAuditListV1(
+    user_data: any,
+    domain_code: any
+  ): Promise<any> {
+    return await this.DirectorRepository.userUpdateAuditListV1(
+      user_data,
+      domain_code
+    );
+  }
+  public async userUpdateAuditListReadV1(
+    user_data: any,
+    domain_code: any
+  ): Promise<any> {
+    return await this.DirectorRepository.userUpdateAuditListReadV1(
+      user_data,
+      domain_code
+    );
+  }
 }
