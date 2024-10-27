@@ -166,6 +166,21 @@ export class FrontDeskResolver {
       domain_code
     );
   }
+  public async userDataUpdateV1(
+    user_data: any,
+    domain_code: any
+  ): Promise<any> {
+    return await this.StaffRepository.userDataUpdateV1(user_data, domain_code);
+  }
+  // public async userDataUpdateApprovalBtnV1(
+  //   user_data: any,
+  //   domain_code: any
+  // ): Promise<any> {
+  //   return await this.StaffRepository.userDataUpdateApprovalBtnV1(
+  //     user_data,
+  //     domain_code
+  //   );
+  // }
 }
 
 export class DirectorResolver {
@@ -242,6 +257,33 @@ export class DirectorResolver {
     domain_code: any
   ): Promise<any> {
     return await this.DirectorRepository.userUpdateAuditListReadV1(
+      user_data,
+      domain_code
+    );
+  }
+  public async userDataListApprovalV1(
+    user_data: any,
+    domain_code: any
+  ): Promise<any> {
+    return await this.DirectorRepository.userDataListApprovalV1(
+      user_data,
+      domain_code
+    );
+  }
+  public async userDataUpdateApprovalBtnV1(
+    user_data: any,
+    domain_code: any
+  ): Promise<any> {
+    return await this.DirectorRepository.userDataUpdateApprovalBtnV1(
+      user_data,
+      domain_code
+    );
+  }
+  public async userDataUpdateRejectBtnV1(
+    user_data: any,
+    domain_code: any
+  ): Promise<any> {
+    return await this.DirectorRepository.userDataUpdateRejectBtnV1(
       user_data,
       domain_code
     );

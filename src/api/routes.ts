@@ -215,6 +215,16 @@ export class StaffRoutes implements IRoute {
             auth: false,
           },
         },
+        {
+          method: "POST",
+          path: "/api/v1/staff/userDataUpdate",
+          config: {
+            // pre: [{ method: validateToken, assign: "token" }],
+            handler: controller.userDataUpdate,
+            description: "Staff To Update Student Details",
+            auth: false,
+          },
+        },
       ]);
       resolve(true);
     });
@@ -332,6 +342,36 @@ export class DirectorRoutes implements IRoute {
             auth: false,
           },
         },
+        {
+          method: "POST",
+          path: "/api/v1/director/userDataListApproval",
+          config: {
+            // pre: [{ method: validateToken, assign: "token" }],
+            handler: controller.userDataListApproval,
+            description: "Staff To Update Student Details",
+            auth: false,
+          },
+        },
+        {
+          method: "POST",
+          path: "/api/v1/director/userDataUpdateApprovalBtn",
+          config: {
+            // pre: [{ method: validateToken, assign: "token" }],
+            handler: controller.userDataUpdateApprovalBtn,
+            description: "Staff To Update Student Details",
+            auth: false,
+          },
+        },
+        {
+          method: "POST",
+          path: "/api/v1/director/userDataUpdateRejectBtn",
+          config: {
+            // pre: [{ method: validateToken, assign: "token" }],
+            handler: controller.userDataUpdateRejectBtn,
+            description: "Staff To Update Student Details",
+            auth: false,
+          },
+        },
       ]);
       resolve(true);
     });
@@ -354,10 +394,10 @@ export class UserPageRoutes implements IRoute {
           },
         },
         {
-          method: "GET",
+          method: "POST",
           path: "/api/v1/user/profileData",
           config: {
-            pre: [{ method: validateToken, assign: "token" }],
+            // pre: [{ method: validateToken, assign: "token" }],
             handler: UserPage.userProfileData,
             description: "User Profile Data",
             auth: false,

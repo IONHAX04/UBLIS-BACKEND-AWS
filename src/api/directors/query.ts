@@ -102,44 +102,32 @@ WHERE th."transTypeId" IN (9, 10, 11, 12, 13, 14, 15)
 
 export const getUpDateList = `SELECT 
     u."refStId",
-    u."refSCustId",
-    u."refStFName",
-    u."refStLName",
-    (SELECT COUNT(*)
-     FROM public."refUserTxnHistory" th
-     LEFT JOIN public."refNotification" rn
-     ON CAST(th."transId" AS INTEGER) = rn."transId"
-     WHERE CAST(th."refStId" AS INTEGER) = u."refStId"
-       AND th."transTypeId" IN (9, 10, 11, 12, 13, 14, 15) 
-       AND (rn."refRead" IS NULL OR rn."refRead" != true)
-    ) AS "TransactionCount",
-    (SELECT TO_CHAR(MAX(th."transTime")::timestamp, 'DD/MM/YYYY') 
-     FROM public."refUserTxnHistory" th
-     LEFT JOIN public."refNotification" rn
-     ON CAST(th."transId" AS INTEGER) = rn."transId"
-     WHERE CAST(th."refStId" AS INTEGER) = u."refStId"
-       AND th."transTypeId" IN (9, 10, 11, 12, 13, 14, 15)
-       AND (rn."refRead" IS NULL OR rn."refRead" != true)
-    ) AS "RequestDate",
-    (SELECT TO_CHAR(MAX(th."transTime")::timestamp, 'HH12:MI:SS AM') 
-     FROM public."refUserTxnHistory" th
-     LEFT JOIN public."refNotification" rn
-     ON CAST(th."transId" AS INTEGER) = rn."transId"
-     WHERE CAST(th."refStId" AS INTEGER) = u."refStId"
-       AND th."transTypeId" IN (9, 10, 11, 12, 13, 14, 15)
-       AND (rn."refRead" IS NULL OR rn."refRead" != true)
-    ) AS "RequestTime"
-FROM public."users" u
-JOIN public."branch" b
-ON CAST(u."refBranchId" AS INTEGER) = CAST(b."refbranchId" AS INTEGER)
-WHERE u."refStId" IN (
-    SELECT DISTINCT th."refStId"
-    FROM public."refUserTxnHistory" th
-    LEFT JOIN public."refNotification" rn
-    ON CAST(th."transId" AS INTEGER) = rn."transId"
-    WHERE th."transTypeId" IN (9, 10, 11, 12, 13, 14, 15) 
-      AND (rn."refRead" IS NULL OR rn."refRead" != true)
-);`;
+    u."refSCustId", 
+    u."refStFName", 
+    u."refStLName", 
+    b."refBranchName",
+    CASE 
+        WHEN txn."transTypeId" BETWEEN 9 AND 13 THEN 'user'
+        WHEN txn."transTypeId" = 16 THEN 'front office'
+    END AS "TransGroup",
+    MAX(txn."transTime")::DATE AS "refDate",
+    MAX(txn."transTime")::TIME AS "refTime",
+    COUNT(*) AS "groupCount"
+FROM 
+    public.users u
+JOIN 
+    public."refUserTxnHistory" txn ON u."refStId" = txn."refStId"
+LEFT JOIN 
+    public."refNotification" notif ON txn."transId" = notif."transId"
+JOIN 
+    public.branch b ON u."refBranchId" = b."refbranchId"
+WHERE 
+    (txn."transTypeId" BETWEEN 9 AND 13 OR txn."transTypeId" = 16)
+    AND (notif."refRead" IS NULL OR notif."refRead" = false)
+GROUP BY 
+    "TransGroup", u."refSCustId", u."refStFName", u."refStLName", b."refBranchName", u."refStId"
+ORDER BY 
+    "TransGroup";`;
 
 export const userUpdateAuditData = `SELECT th."transId", th."transTypeId", th."transData", th."transTime", th."refStId", th."refUpdatedBy", u."refSCustId"
 FROM public."refUserTxnHistory" th
@@ -152,4 +140,13 @@ WHERE th."transTypeId" IN (9, 10, 11, 12, 13, 14, 15)
   AND u."refStId" = $1
 ORDER BY th."transId" ASC;`;
 
-export const userAuditDataRead=`INSERT INTO public."refNotification" ("transId","refRead","refReadBy") VALUES ($1,$2,$3);`
+export const userAuditDataRead = `INSERT INTO public."refNotification" ("transId","refRead","refReadBy") VALUES ($1,$2,$3);`;
+
+export const getTempData = `SELECT * FROM public."refTempUserData" WHERE "refTeId"=$1`;
+
+export const updateTempData = `UPDATE public."refTempUserData" SET "refStatus"=$1 WHERE "refTeId"=$2;
+`;
+
+export const userUpdateApprovalList = `SELECT * 
+FROM public."refTempUserData" td
+WHERE td."refStId" = $1 AND td."refStatus" IS NULL;`;

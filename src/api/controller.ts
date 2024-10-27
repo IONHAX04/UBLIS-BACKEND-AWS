@@ -553,6 +553,66 @@ export class FrontDesk {
         .code(500);
     }
   };
+  public userDataUpdate = async (
+    request: Hapi.Request,
+    response: Hapi.ResponseToolkit
+  ): Promise<any> => {
+    // const decodedToken = request.plugins.token.id;
+    try {
+      logger.info(`GET URL REQ => ${request.url.href}`);
+      const domainCode = request.headers.domain_code || "";
+      const entity = await this.resolver.userDataUpdateV1(
+        request.payload
+        // decodedToken
+      );
+
+      if (entity.success) {
+        return response.response(entity).code(200);
+      }
+      return response.response(entity).code(200);
+    } catch (error) {
+      logger.error("Error in Sending User Data To User Management Page", error);
+      return response
+        .response({
+          success: false,
+          message:
+            error instanceof Error
+              ? error.message
+              : "An unknown error occurred",
+        })
+        .code(500);
+    }
+  };
+  // public userDataUpdateApprovalBtn = async (
+  //   request: Hapi.Request,
+  //   response: Hapi.ResponseToolkit
+  // ): Promise<any> => {
+  //   // const decodedToken = request.plugins.token.id;
+  //   try {
+  //     logger.info(`GET URL REQ => ${request.url.href}`);
+  //     const domainCode = request.headers.domain_code || "";
+  //     const entity = await this.resolver.userDataUpdateApprovalBtnV1(
+  //       request.payload
+  //       // decodedToken
+  //     );
+
+  //     if (entity.success) {
+  //       return response.response(entity).code(200);
+  //     }
+  //     return response.response(entity).code(200);
+  //   } catch (error) {
+  //     logger.error("Error in Sending User Data To User Management Page", error);
+  //     return response
+  //       .response({
+  //         success: false,
+  //         message:
+  //           error instanceof Error
+  //             ? error.message
+  //             : "An unknown error occurred",
+  //       })
+  //       .code(500);
+  //   }
+  // };
 }
 
 export class Director {
@@ -885,6 +945,96 @@ export class Director {
         .code(500);
     }
   };
+  public userDataUpdateApprovalBtn = async (
+    request: any,
+    response: Hapi.ResponseToolkit
+  ): Promise<any> => {
+    // const decodedToken = request.plugins.token.id;
+    try {
+      logger.info(`GET URL REQ => ${request.url.href}`);
+      const domainCode = request.headers.domain_code || "";
+      const entity = await this.resolver.userDataUpdateApprovalBtnV1(
+        request.payload
+        // decodedToken
+      );
+
+      if (entity.success) {
+        return response.response(entity).code(200);
+      }
+      return response.response(entity).code(200);
+    } catch (error) {
+      logger.error("Error in Approval Data for User Profile", error);
+      return response
+        .response({
+          success: false,
+          message:
+            error instanceof Error
+              ? error.message
+              : "An unknown error occurred",
+        })
+        .code(500);
+    }
+  };
+  public userDataListApproval = async (
+    request: any,
+    response: Hapi.ResponseToolkit
+  ): Promise<any> => {
+    // const decodedToken = request.plugins.token.id;
+    try {
+      logger.info(`GET URL REQ => ${request.url.href}`);
+      const domainCode = request.headers.domain_code || "";
+      const entity = await this.resolver.userDataListApprovalV1(
+        request.payload
+        // decodedToken
+      );
+
+      if (entity.success) {
+        return response.response(entity).code(200);
+      }
+      return response.response(entity).code(200);
+    } catch (error) {
+      logger.error("Error in passing approval List", error);
+      return response
+        .response({
+          success: false,
+          message:
+            error instanceof Error
+              ? error.message
+              : "An unknown error occurred",
+        })
+        .code(500);
+    }
+  };
+  public userDataUpdateRejectBtn = async (
+    request: any,
+    response: Hapi.ResponseToolkit
+  ): Promise<any> => {
+    // const decodedToken = request.plugins.token.id;
+    try {
+      logger.info(`GET URL REQ => ${request.url.href}`);
+      const domainCode = request.headers.domain_code || "";
+      const entity = await this.resolver.userDataUpdateRejectBtnV1(
+        request.payload
+        // decodedToken
+      );
+
+      if (entity.success) {
+        return response.response(entity).code(200);
+      }
+      return response.response(entity).code(200);
+    } catch (error) {
+      logger.error("Error in Reject Data for User Profile", error);
+      return response
+        .response({
+          success: false,
+          message:
+            error instanceof Error
+              ? error.message
+              : "An unknown error occurred",
+        })
+        .code(500);
+    }
+  };
 
   // public addEmployeeData = async (
   //   request: any,
@@ -976,13 +1126,13 @@ export class userDashBoard {
     request: any,
     response: Hapi.ResponseToolkit
   ): Promise<any> => {
-    const decodedToken = request.plugins.token.id;
+    // const decodedToken = request.plugins.token.id;
     try {
       logger.info(`GET URL REQ => ${request.url.href}`);
       const domainCode = request.headers.domain_code || "";
       const entity = await this.resolver.userProfileDataV1(
-        request.payload,
-        decodedToken
+        request.payload
+        // decodedToken
       );
 
       if (entity.success) {

@@ -1,8 +1,10 @@
 import { executeQuery, getClient } from "../../helper/db";
+import { buildUpdateQuery, getChanges } from "../../helper/buildquery";
 import { v4 as uuidv4 } from "uuid";
 import bcrypt from "bcryptjs";
 import { viewFile, deleteFile, storeFile } from "../../helper/storage";
 import path from "path";
+import { PoolClient } from "pg";
 
 import {
   queryStaffDetails,
@@ -23,6 +25,9 @@ import {
   getUpDateList,
   userUpdateAuditData,
   userAuditDataRead,
+  getTempData,
+  updateTempData,
+  userUpdateApprovalList,
 } from "./query";
 import { encrypt } from "../../helper/encrypt";
 import { generateToken, decodeToken } from "../../helper/token";
@@ -131,14 +136,12 @@ export class DirectorRepository {
     // const staffId = decodedToken;
     const Id = userData.refStId;
     try {
-      console.log("userData", userData);
       const studentId = [userData.refStId, 3, userData.isTherapy];
       // const refStId = parseInt(userData.refStId, 10);
       const updateUserTypeResult = await executeQuery(
         updateUserType,
         studentId
       );
-      console.log("updateUserTypeResult", updateUserTypeResult);
 
       const transId = 4,
         transData = "Therapist Submit The response Successfully",
@@ -156,7 +159,6 @@ export class DirectorRepository {
         updateHistoryQuery1,
         historyData
       );
-      console.log("updateHistoryQueryResult", updateHistoryQueryResult);
 
       const tokenData = {
         // id: refStId,
@@ -196,7 +198,6 @@ export class DirectorRepository {
     // const Id = userData.refStId;
     try {
       const label = await executeQuery(getUserTypeLabel, []);
-      console.log("label", label);
 
       const tokenData = {
         // id: refStId,
@@ -237,8 +238,6 @@ export class DirectorRepository {
       const userCount = parseInt(userCountResult[0].count, 10);
 
       let newCustomerId = `UBYS${(10000 + userCount + 1).toString()}`;
-      console.log("newCustomerId", newCustomerId);
-      console.log(userData);
 
       const params = [
         userData.refFName,
@@ -256,10 +255,8 @@ export class DirectorRepository {
       const dobYear = userData.refDob.split("-")[2];
 
       const password = `${userData.refFName.toUpperCase()}$${dobYear}`;
-      console.log("password", password);
 
       const hashedPassword = await bcrypt.hash(password, 10);
-      console.log("hashedPassword", hashedPassword);
 
       const domainParams = [
         newUser.refStId,
@@ -457,6 +454,37 @@ export class DirectorRepository {
       );
     }
   }
+  public async userDataListApprovalV1(
+    userData: any,
+    decodedToken: number
+  ): Promise<any> {
+    const staffId = decodedToken || 1;
+    const id = userData.refStId;
+    let token = {
+      id: staffId,
+    };
+    try {
+      const getList = await executeQuery(userUpdateApprovalList, [id]);
+      return encrypt(
+        {
+          success: true,
+          message: "post User Update Approval List",
+          token: token,
+          data: getList,
+        },
+        false
+      );
+    } catch (error) {
+      return encrypt(
+        {
+          success: false,
+          message: "Error in Sending User Approval List",
+          token: token,
+        },
+        false
+      );
+    }
+  }
   public async userUpdateAuditListReadV1(
     userData: any,
     decodedToken: number
@@ -466,8 +494,6 @@ export class DirectorRepository {
       id: 3,
     };
     try {
-      console.log("userData", userData.transId[0]);
-
       for (let i = 0; i < userData.transId.length; i++) {
         const getList = await executeQuery(userAuditDataRead, [
           userData.transId[i],
@@ -499,6 +525,205 @@ export class DirectorRepository {
         },
         false
       );
+    }
+  }
+  public async userDataUpdateApprovalBtnV1(
+    userData: any,
+    decodedToken: number
+  ): Promise<any> {
+    const client: PoolClient = await getClient();
+    const staffId = decodedToken || 1;
+    const id = userData.refStId;
+    const userAppId = userData.userAppId;
+    let tokenData = {
+      id: staffId,
+    };
+    const token = generateToken(tokenData, true);
+    try {
+      for (let i = 0; i < userAppId.length; i++) {
+        const tempData = await executeQuery(getTempData, [userAppId[i]]);
+        const transTypeId = tempData[0].transTypeId;
+
+        await client.query("BEGIN");
+        for (const section in userData) {
+          if (userData.hasOwnProperty(section)) {
+            const tableName: string = tempData[0].refTable;
+            const updatedData = tempData[0].refData;
+            const changes = tempData[0].refChanges;
+            const identifier = { column: "refStId", value: id };
+
+            const { updateQuery, values } = buildUpdateQuery(
+              tableName,
+              updatedData,
+              identifier
+            );
+
+            const userResult = await client.query(updateQuery, values);
+
+            if (!userResult.rowCount) {
+              throw new Error(
+                "Failed to update the profile data from Front Desk"
+              );
+            }
+
+            const userResult1 = await client.query(updateTempData, [
+              "approve",
+              userAppId[i],
+            ]);
+
+            if (!userResult1.rowCount) {
+              throw new Error("Failed to Delete the Tem Data");
+            }
+
+            for (const key in changes) {
+              if (changes.hasOwnProperty(key)) {
+                const parasHistory = [
+                  transTypeId,
+                  changes[key],
+                  id,
+                  new Date().toLocaleString(),
+                  "Front Office",
+                ];
+
+                const queryResult = await client.query(
+                  updateHistoryQuery1,
+                  parasHistory
+                );
+
+                if (!queryResult) {
+                  throw new Error("Failed to update the History.");
+                }
+
+                const transId = queryResult.rows[0].transId;
+
+                const getList = await client.query(userAuditDataRead, [
+                  transId,
+                  true,
+                  staffId,
+                ]);
+
+                if (!getList) {
+                  throw new Error("Failed to update Audit Page.");
+                }
+                await client.query("COMMIT");
+              }
+            }
+          }
+        }
+      }
+
+      return encrypt(
+        {
+          success: true,
+          message: "user Profile Data Update is Approved",
+          token: token,
+        },
+        false
+      );
+    } catch (error) {
+      await client.query("ROLLBACK");
+
+      const results = {
+        success: false,
+        message: "Error in updating the profile data",
+        token: token,
+      };
+      return encrypt(results, false);
+    } finally {
+      client.release();
+    }
+  }
+
+  public async userDataUpdateRejectBtnV1(
+    userData: any,
+    decodedToken: number
+  ): Promise<any> {
+    const client: PoolClient = await getClient();
+    const staffId = decodedToken || 1;
+    const id = userData.refStId;
+    const userAppId = userData.userAppId;
+    let tokenData = {
+      id: staffId,
+    };
+    const token = generateToken(tokenData, true);
+    try {
+      for (let i = 0; i < userAppId.length; i++) {
+        const tempData = await executeQuery(getTempData, [userAppId[i]]);
+        const transTypeId = 17;
+
+        await client.query("BEGIN");
+        for (const section in userData) {
+          if (userData.hasOwnProperty(section)) {
+            const tableName: string = tempData[0].refTable;
+            const updatedData = tempData[0].refData;
+            const changes = tempData[0].refChanges;
+            const identifier = { column: "refStId", value: id };
+
+            const userResult1 = await client.query(updateTempData, [
+              "reject",
+              userAppId[i],
+            ]);
+
+            if (!userResult1.rowCount) {
+              throw new Error("Failed to Reject the Tem Data");
+            }
+
+            for (const key in changes) {
+              if (changes.hasOwnProperty(key)) {
+                const parasHistory = [
+                  transTypeId,
+                  changes[key],
+                  id,
+                  new Date().toLocaleString(),
+                  "Front Office",
+                ];
+
+                const queryResult = await client.query(
+                  updateHistoryQuery1,
+                  parasHistory
+                );
+
+                if (!queryResult) {
+                  throw new Error("Failed to update the History.");
+                }
+
+                const transId = queryResult.rows[0].transId;
+
+                const getList = await client.query(userAuditDataRead, [
+                  transId,
+                  true,
+                  staffId,
+                ]);
+
+                if (!getList) {
+                  throw new Error("Failed to update Audit Page.");
+                }
+                await client.query("COMMIT");
+              }
+            }
+          }
+        }
+      }
+
+      return encrypt(
+        {
+          success: true,
+          message: "user update Profile Data is Rejected ",
+          token: token,
+        },
+        false
+      );
+    } catch (error) {
+      await client.query("ROLLBACK");
+
+      const results = {
+        success: false,
+        message: "Error in Rejecting the profile data",
+        token: token,
+      };
+      return encrypt(results, false);
+    } finally {
+      client.release();
     }
   }
 }

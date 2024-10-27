@@ -235,3 +235,16 @@ JOIN public."users" u
 ON CAST(th."refStId" AS INTEGER) = u."refStId"
 WHERE th."transTypeId" IN (9, 10, 11, 12, 13, 14, 15) 
   AND (rn."refRead" IS NULL OR rn."refRead" != true);`;
+
+export const getUserData = `SELECT * FROM public."{{tableName}}" WHERE "refStId" = $1;`;
+
+export const userTempData = `INSERT INTO public."refTempUserData" ("refStId","transTypeId","refChanges","refData","refTable","refTime") VALUES ($1,$2,$3,$4,$5,$6);`;
+
+export const updateHistoryQuery1 = `
+  INSERT INTO public."refUserTxnHistory" (
+    "transTypeId","transData","refStId", "transTime", "refUpdatedBy"
+  ) VALUES ($1, $2, $3, $4, $5)
+  RETURNING *;
+`;
+
+export const getTempData = `SELECT * FROM public."refTempUserData" WHERE "refTeId"=$1`;

@@ -391,7 +391,25 @@ export class UserRepository {
     userData: any,
     decodedToken: number
   ): Promise<any> {
-    const refStId = decodedToken;
+    const id = decodedToken || 65;
+    const tokenData = {
+      id: id,
+    };
+
+    console.log("-------------------------------------------------");
+    let refStId;
+    const checkUser = await executeQuery(getUserType, [id]);
+    if (checkUser[0].refUtId == 5 || checkUser[0].refUtId == 6) {
+      refStId = id;
+    } else {
+      refStId = userData.refStId;
+    }
+
+    const token = generateToken(tokenData, true);
+    console.log(
+      "token ----------------------------------------------------",
+      token
+    );
     try {
       let profileData = {};
       const Datas = await executeQuery(getProfileData, [refStId]);
@@ -523,11 +541,6 @@ export class UserRepository {
 
       profileData = { ...profileData, modeOfCommunication };
 
-      const tokenData = {
-        id: refStId,
-      };
-
-      const token = generateToken(tokenData, true);
       return encrypt(
         {
           success: true,
@@ -538,8 +551,14 @@ export class UserRepository {
         true
       );
     } catch (error) {
-      console.error("Error in Dashboard Data Passing:", error);
-      throw error;
+      return encrypt(
+        {
+          success: false,
+          message: "error in sending Profile Data",
+          token: token,
+        },
+        true
+      );
     }
   }
   public async userProfileUpdateV1(
@@ -710,7 +729,7 @@ export class UserRepository {
                 updateHistoryQuery1,
                 parasHistory
               );
-              if (!userResult.rowCount) {
+              if (!queryResult.rowCount) {
                 throw new Error("Failed to update the History.");
               }
 
@@ -738,7 +757,7 @@ export class UserRepository {
         success: false,
         message: "Error in updating the profile data",
       };
-      return encrypt(results, false);
+      return encrypt(results, true);
     } finally {
       client.release();
     }
