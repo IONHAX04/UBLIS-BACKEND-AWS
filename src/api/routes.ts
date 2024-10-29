@@ -134,6 +134,17 @@ export class UserProfile implements IRoute {
             auth: false,
           },
         },
+        {
+          method: "POST",
+          path: "/api/v1/profile/MemberList",
+          config: {
+            pre: [{ method: validateToken, assign: "token" }], // Use the validateToken function here
+            handler: controller.userRegisterPageData,
+            description: "Passing the register Data to the Register Page",
+            tags: ["api", "Users"],
+            auth: false,
+          },
+        },
       ]);
       resolve(true);
     });

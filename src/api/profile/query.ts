@@ -68,7 +68,7 @@ WHERE u."refStId" = $1;
 `;
 
 export const fetchPreferableTiming = `
-  SELECT "refTimeId", "refTime","refTimeMembers","refTimeMode","refTimeDays"
+  SELECT "refTimeId", "refTime","refTimeMode","refTimeDays"
   FROM public."refTiming"; 
 `;
 
