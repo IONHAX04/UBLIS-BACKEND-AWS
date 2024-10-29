@@ -600,8 +600,11 @@ export class DirectorRepository {
   ): Promise<any> {
     const client: PoolClient = await getClient();
     const staffId = decodedToken || 1;
+    console.log("staffId", staffId);
     const id = userData.refStId;
+    console.log("id", id);
     const userAppId = userData.userAppId;
+    console.log("userAppId", userAppId);
     let tokenData = {
       id: staffId,
     };
@@ -610,6 +613,7 @@ export class DirectorRepository {
       let mailId = await executeQuery(getMailId, [id]);
       let changeData = {};
       mailId = mailId[0].refCtEmail;
+      console.log("mailId", mailId);
       for (let i = 0; i < userAppId.length; i++) {
         const tempData = await executeQuery(getTempData, [userAppId[i]]);
         const transTypeId = tempData[0].transTypeId;
@@ -651,7 +655,7 @@ export class DirectorRepository {
               if (changes.hasOwnProperty(key)) {
                 const parasHistory = [
                   transTypeId,
-                  changes[key],
+                  changes,
                   id,
                   new Date().toLocaleString(),
                   "Front Office",
@@ -662,12 +666,13 @@ export class DirectorRepository {
                   parasHistory
                 );
 
-                const { data, label } = changes[key];
+                const { data, label } = changes;
                 const Data = {
                   oldValue: data.oldValue,
                   newValue: data.newValue,
                   label: label,
                 };
+                console.log("Data", Data);
 
                 changeData = { ...changeData, Data };
 
@@ -695,16 +700,17 @@ export class DirectorRepository {
         const tableRows = Object.values(changeData)
           .map(
             (data: any) => `
-            <tr>
-              <td>${data.label}</td>
-              <td>${data.oldValue}</td>
-              <td>${data.newValue}</td>
-            </tr>`
+          <tr>
+          <td>${data.label}</td>
+          <td>${data.oldValue}</td>
+          <td>${data.newValue}</td>
+          </tr>`
           )
           .join("");
+        console.log("tableRows", tableRows);
         const mailOptions = {
-          to: userData.refEmail, // Replace with the recipient's email
-          subject: "Director Add U As An Employee In Ublis Yoga", // Subject of the email
+          to: Array.isArray(mailId) ? mailId.join(",") : mailId,
+          subject: "Director Add U As An Employee In Ublis Yoga",
           html: updateDataApproval(tableRows),
         };
 
