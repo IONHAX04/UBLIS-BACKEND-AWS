@@ -65,30 +65,30 @@ export class StaffRepository {
             const signUpCount = await executeQuery(getSignUpCount, []);
             refDashBoardData = { ...refDashBoardData, signUpCount };
           case "feedback":
-            console.log("This For Feedback");
+            // console.log("This For Feedback");
 
             break;
           case "transaction":
-            console.log("This for Transaction");
+            // console.log("This for Transaction");
             break;
           case "payroll":
-            console.log("This For payRoll");
+            // console.log("This For payRoll");
             break;
           case "staff":
             const staffCount = await executeQuery(getStaffCount, []);
             refDashBoardData = { ...refDashBoardData, staffCount };
             break;
           case "report":
-            console.log("this For report");
+            // console.log("this For report");
             break;
           case "blogs":
-            console.log("This For Blog");
+            // console.log("This For Blog");
             break;
           case "notes":
-            console.log("This For Notes");
+            // console.log("This For Notes");
             break;
           case "restrictions":
-            console.log("This for therapist user data");
+            // console.log("This for therapist user data");
             break;
           case "therapistuserdata":
             const therapistUserDataCount = await executeQuery(
@@ -107,24 +107,24 @@ export class StaffRepository {
 
       switch (refUserType.refUtId) {
         case 5: {
-          console.log("This Notification For Student");
+          // console.log("This Notification For Student");
           break;
         }
         case 7: {
           // Director
-          console.log("This Notification For Director");
+          // console.log("This Notification For Director");
           break;
         }
         case 8: {
-          console.log("This Notification For Finance");
+          // console.log("This Notification For Finance");
           break;
         }
         case 10: {
-          console.log("This Notification For Instructor");
+          // console.log("This Notification For Instructor");
           break;
         }
         case 11: {
-          console.log("This Notification For Therapist");
+          // console.log("This Notification For Therapist");
           break;
         }
       }
@@ -227,16 +227,12 @@ export class StaffRepository {
 
   public async staffApprovalBtnV1(userData: any): Promise<any> {
     try {
-      console.log("userData", userData);
-
       const studentId = [userData.refStId, userData.nextStatus];
       // const refStId = parseInt(userData.refStId, 10);
       const updateUserTypeResult = await executeQuery(
         updateUserType,
         studentId
       );
-      console.log("updateUserTypeResult", updateUserTypeResult);
-
       const transId = 4,
         transData = "Accept the User as Student",
         refUpdatedBy = "Front Desk";
@@ -387,8 +383,6 @@ export class StaffRepository {
   public async userFollowUpV1(userData: any): Promise<any> {
     try {
       const studentId = [userData.refStId, 3];
-      console.log("userData", userData);
-
       const userStatus = [
         userData.refStId,
         userData.refStatusId,
@@ -637,7 +631,6 @@ export class StaffRepository {
           }
 
           const changes = getChanges(temp1, temp2);
-          console.log("changes", changes);
 
           for (const key in changes) {
             if (changes.hasOwnProperty(key)) {

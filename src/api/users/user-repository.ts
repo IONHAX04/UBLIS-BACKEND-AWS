@@ -731,8 +731,6 @@ export class UserRepository {
           }
 
           const changes = getChanges(updatedData, oldData);
-          console.log("changes", changes);
-
           if (!userResult.rowCount) {
             throw new Error("Failed to update the profile data.");
           }

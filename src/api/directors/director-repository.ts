@@ -313,7 +313,6 @@ export class DirectorRepository {
           // Call the sendEmail function
           try {
             await sendEmail(mailOptions);
-            console.log("Email sent successfully!");
           } catch (error) {
             console.error("Failed to send email:", error);
           }
@@ -706,7 +705,7 @@ export class DirectorRepository {
         // Call the sendEmail function
         try {
           await sendEmail(mailOptions);
-          console.log("Email sent successfully!");
+         
         } catch (error) {
           console.error("Failed to send email:", error);
         }
@@ -845,7 +844,6 @@ export class DirectorRepository {
         // Call the sendEmail function
         try {
           await sendEmail(mailOptions);
-          console.log("Email sent successfully!");
         } catch (error) {
           console.error("Failed to send email:", error);
         }

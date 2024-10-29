@@ -833,7 +833,6 @@ export class Director {
   ): Promise<any> => {
     // const decodedToken = request.plugins.token.id;
     try {
-      console.log("-----------------------------------------------");
       logger.info(`GET URL REQ => ${request.url.href}`);
       const domainCode = request.headers.domain_code || "";
       const entity = await this.resolver.addEmployeeV1(

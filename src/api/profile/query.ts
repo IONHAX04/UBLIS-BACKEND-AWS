@@ -37,12 +37,15 @@ export const insertProfilePersonalData = `
     "refguardian" = $4,
     "refTimingId" = $5,
     "refUtId" = $6,
-    "refBranchId"= $7,
-    "refStFName"=$8,
-    "refStLName"=$9,
-    "refStDOB"=$10,
-    "refStAge"=$11
-  WHERE "refStId" = $12
+    "refStFName"=$7,
+    "refStLName"=$8,
+    "refStDOB"=$9,
+    "refStAge"=$10,
+    "refBranchId"=$11,
+    "refSessionType"=$12,
+    "refSPreferTimeId"=$13,
+    "refSessionMode"=$14
+  WHERE "refStId" = $15
   RETURNING *;
 
 `;
@@ -65,11 +68,6 @@ ON u."refStId" = CAST(ruc."refStId" AS INTEGER)
 JOIN "refUsersDomain" rud
 ON u."refStId" = CAST(rud."refStId" AS INTEGER)
 WHERE u."refStId" = $1;
-`;
-
-export const fetchPreferableTiming = `
-  SELECT "refTimeId", "refTime","refTimeMode","refTimeDays"
-  FROM public."refTiming"; 
 `;
 
 export const fetchPresentHealthProblem = `

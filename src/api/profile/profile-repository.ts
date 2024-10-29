@@ -4,7 +4,6 @@ import {
   insertProfileGeneralHealth,
   insertProfilePersonalData,
   fetchProfileData,
-  fetchPreferableTiming,
   fetchPresentHealthProblem,
   insertCommunicationData,
   updateHistoryQuery,
@@ -128,12 +127,15 @@ export class ProfileRepository {
         userData.personalData.ref_su_guardian, //4
         userData.personalData.ref_su_timing, //5
         refUtId, //6
-        userData.personalData.ref_su_branch, //7
-        userData.personalData.ref_su_fname, //8
-        userData.personalData.ref_su_lname, //9
-        userData.personalData.ref_su_dob, //10
-        userData.personalData.ref_su_age, //11
-        userData.refStId, //12
+        userData.personalData.ref_su_fname, //7
+        userData.personalData.ref_su_lname, //8
+        userData.personalData.ref_su_dob, //9
+        userData.personalData.ref_su_age, //10
+        userData.personalData.ref_su_branchId, //11
+        userData.personalData.ref_su_seTId, //12
+        userData.personalData.ref_su_prTimeId, //13
+        userData.personalData.ref_su_seModeId, //14
+        userData.refStId, //15
       ];
 
       const userResult1 = await client.query(
@@ -171,11 +173,6 @@ export class ProfileRepository {
       if (userData.address.addresstype === true) {
         refAdAdd1Type = 3;
         refAdAdd2Type = 0;
-        userData.address.refAdAdd2 = "";
-        userData.address.refAdArea2 = "";
-        userData.address.refAdCity2 = "";
-        userData.address.refAdState2 = "";
-        userData.address.refAdPincode2;
       }
 
       const paramsAddress = [
@@ -270,8 +267,7 @@ export class ProfileRepository {
       };
       return encrypt(results, true);
     } catch (error) {
-      console.log("error", error);
-      // Rollback the transaction in case of any error
+      console.log("error");
       await client.query("ROLLBACK");
 
       const results = {
@@ -317,14 +313,6 @@ export class ProfileRepository {
         age: profileResult[0].refStAge,
       };
 
-      const timingResult = await executeQuery(fetchPreferableTiming, []);
-      const preferableTiming = timingResult.map((row: any, index: number) => {
-        return {
-          [index +
-          1]: `${row.refTime} ${row.refTimeMembers} ${row.refTimeMode} ${row.refTimeDays}`,
-        };
-      });
-
       const healthResult = await executeQuery(fetchPresentHealthProblem, []);
       const presentHealthProblem = healthResult.reduce((acc: any, row: any) => {
         acc[row.refHealthId] = row.refHealth;
@@ -339,7 +327,6 @@ export class ProfileRepository {
 
       const registerData = {
         ProfileData: profileData,
-        PreferableTiming: preferableTiming,
         presentHealthProblem: presentHealthProblem,
         branchList: branchList,
       };

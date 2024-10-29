@@ -29,7 +29,6 @@ const generateUniqueFilename = (originalName: string): string => {
 
 // Function to store a file
 export const storeFile = async (file: HapiFile): Promise<string> => {
-  console.log("------------------------------------------ vijay");
   const uploadDir = path.join(process.cwd(), "./src/asserts/documents");
   const uniqueFilename = generateUniqueFilename(file.hapi.filename);
   const uploadPath = path.join(uploadDir, uniqueFilename);
@@ -61,15 +60,17 @@ export const storeFile = async (file: HapiFile): Promise<string> => {
 // Function to view a stored file
 export const viewFile = (filePath: string): Promise<Buffer> => {
   return new Promise((resolve, reject) => {
-    fs.readFile(filePath, (err: NodeJS.ErrnoException | null, data?: Buffer) => {
-      if (err) {
-        return reject(err);
+    fs.readFile(
+      filePath,
+      (err: NodeJS.ErrnoException | null, data?: Buffer) => {
+        if (err) {
+          return reject(err);
+        }
+        resolve(data!); // Return the file buffer
       }
-      resolve(data!); // Return the file buffer
-    });
+    );
   });
 };
-
 
 export const deleteFile = async (filePath: string): Promise<void> => {
   return new Promise((resolve, reject) => {

@@ -20,14 +20,11 @@ const transporter = nodemailer.createTransport({
  * @param {MailOptions} mailOptions - Options for the email.
  */
 export const sendEmail = async (mailOptions: MailOptions): Promise<void> => {
-  console.log("Email:", process.env.EMAILID);
-  console.log("Password:", process.env.PASSWORD);
   try {
     await transporter.sendMail({
       from: process.env.EMAILID, // Sender address
       ...mailOptions,
     });
-    console.log("Email sent successfully!");
   } catch (error) {
     console.error("Error sending email:", error);
   }
