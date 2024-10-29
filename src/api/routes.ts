@@ -139,9 +139,18 @@ export class UserProfile implements IRoute {
           path: "/api/v1/profile/MemberList",
           config: {
             pre: [{ method: validateToken, assign: "token" }], // Use the validateToken function here
-            handler: controller.userRegisterPageData,
+            handler: controller.userMemberList,
             description: "Passing the register Data to the Register Page",
-            tags: ["api", "Users"],
+            auth: false,
+          },
+        },
+        {
+          method: "POST",
+          path: "/api/v1/profile/sectionTime",
+          config: {
+            pre: [{ method: validateToken, assign: "token" }], // Use the validateToken function here
+            handler: controller.sectionTime,
+            description: "Passing the register Data to the Register Page",
             auth: false,
           },
         },

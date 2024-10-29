@@ -9,6 +9,9 @@ import {
   insertCommunicationData,
   updateHistoryQuery,
   fetchBranchList,
+  BranchMemberList,
+  getSectionTimeData,
+  getCustTime,
 } from "./query";
 import { encrypt } from "../../helper/encrypt";
 import { generateToken, generateToken1 } from "../../helper/token";
@@ -285,12 +288,11 @@ export class ProfileRepository {
     try {
       const refStId = parseInt(userData.refStId, 10);
       if (isNaN(refStId)) {
-        throw new Error("Invalid refStId. Must be a number.");
+        throw new Error("Invalid refStId. Must be a number. repository");
       }
 
       const params = [refStId];
       const profileResult = await executeQuery(fetchProfileData, params);
-      console.log("profileResult", profileResult);
 
       if (!profileResult.length) {
         throw new Error("Profile data not found for refStId: " + refStId);
@@ -314,7 +316,6 @@ export class ProfileRepository {
         phone: profileResult[0].refCtMobile,
         age: profileResult[0].refStAge,
       };
-      console.log("profileData", profileData);
 
       const timingResult = await executeQuery(fetchPreferableTiming, []);
       const preferableTiming = timingResult.map((row: any, index: number) => {
@@ -360,6 +361,82 @@ export class ProfileRepository {
       );
     } catch (error) {
       console.error("Error in userRegisterPageDataV1:", error);
+      throw error;
+    }
+  }
+  public async userMemberListV1(userData: any): Promise<any> {
+    try {
+      const refStId = userData.refStId;
+      const branchId = userData.branchId;
+
+      const MemberList = await executeQuery(BranchMemberList, [branchId]);
+
+      const formattedMemberList = MemberList.reduce((acc, member) => {
+        acc[member.refTimeMembersID] = member.refTimeMembers;
+        return acc;
+      }, {});
+
+      const tokenData = {
+        id: refStId,
+      };
+
+      const token = generateToken1(tokenData, true);
+
+      return encrypt(
+        {
+          success: true,
+          message: "Section Member List",
+          token: token,
+          data: formattedMemberList,
+        },
+        true
+      );
+    } catch (error) {
+      console.error("Error in Section Member List", error);
+      throw error;
+    }
+  }
+  public async sectionTimeV1(userData: any): Promise<any> {
+    try {
+      const refStId = userData.refStId;
+      const sectionId = userData.sectionId;
+      const sectionTimeList = await executeQuery(getSectionTimeData, [
+        sectionId,
+      ]);
+      const custTime = await executeQuery(getCustTime, []);
+
+      const formattedSectionTime = sectionTimeList.reduce((acc, member) => {
+        acc[member.refTimeId] =
+          member.refTime +
+          "  |  " +
+          member.refTimeMode +
+          "  |  " +
+          member.refTimeDays;
+        return acc;
+      }, {});
+      const formattedCustTime = custTime.reduce((acc, member) => {
+        acc[member.refCustTimeId] = member.refCustTimeData;
+        return acc;
+      }, {});
+
+      const tokenData = {
+        id: refStId,
+      };
+
+      const token = generateToken1(tokenData, true);
+
+      return encrypt(
+        {
+          success: true,
+          message: "Section Time Data",
+          token: token,
+          SectionTime: formattedSectionTime,
+          CustTime: formattedCustTime,
+        },
+        true
+      );
+    } catch (error) {
+      console.error("Error in Section Time Data", error);
       throw error;
     }
   }

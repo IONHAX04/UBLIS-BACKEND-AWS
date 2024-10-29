@@ -328,7 +328,7 @@ export class UserProfileController {
         return response
           .response({
             success: false,
-            message: "Invalid refStId. Must be a number.",
+            message: "Invalid refStId. Must be a number. controller",
           })
           .code(400);
       }
@@ -345,6 +345,65 @@ export class UserProfileController {
       return response.response(entity).code(200);
     } catch (error) {
       logger.error("Error in userLogin:", error);
+      return response
+        .response({
+          success: false,
+          message:
+            error instanceof Error
+              ? error.message
+              : "An unknown error occurred",
+        })
+        .code(500);
+    }
+  };
+  public userMemberList = async (
+    request: any,
+    response: Hapi.ResponseToolkit
+  ): Promise<any> => {
+    const decodedToken = request.plugins.token.id;
+    try {
+      logger.info(`GET URL REQ => ${request.url.href}`);
+      const domainCode = request.headers.domain_code || "";
+      const entity = await this.resolver.userMemberListV1(
+        request.payload,
+        decodedToken
+      );
+
+      if (entity.success) {
+        return response.response(entity).code(200);
+      }
+      return response.response(entity).code(200);
+    } catch (error) {
+      logger.error("Error in Sending Branch Member List:", error);
+      return response
+        .response({
+          success: false,
+          message:
+            error instanceof Error
+              ? error.message
+              : "An unknown error occurred",
+        })
+        .code(500);
+    }
+  };
+  public sectionTime = async (
+    request: any,
+    response: Hapi.ResponseToolkit
+  ): Promise<any> => {
+    const decodedToken = request.plugins.token.id;
+    try {
+      logger.info(`GET URL REQ => ${request.url.href}`);
+      const entity = await this.resolver.sectionTimeV1(
+        request.payload,
+        decodedToken
+      );
+
+      if (entity.success) {
+        return response.response(entity).code(200);
+      }
+      return response.response(entity).code(200);
+    } catch (error) {
+      logger.error("Error in Sending Section Time List", error);
       return response
         .response({
           success: false,

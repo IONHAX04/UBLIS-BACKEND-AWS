@@ -85,3 +85,14 @@ export const updateHistoryQuery = `
 `;
 
 export const fetchBranchList = `SELECT * FROM public.branch;`;
+
+export const BranchMemberList = `SELECT rt."refTimeMembersID", rm."refTimeMembers"
+FROM public."refTiming" rt
+JOIN public."refMembers" rm
+ON CAST(rt."refTimeMembersID" AS integer) = rm."refTimeMembersID"
+WHERE rt."refbranchId" = $1
+GROUP BY rt."refTimeMembersID", rm."refTimeMembers";`;
+
+export const getSectionTimeData = `SELECT "refTimeId" ,"refTime","refTimeMode","refTimeDays" FROM public."refTiming" rt WHERE "refTimeMembersID"=$1`;
+
+export const getCustTime = `SELECT * FROM public."refCustTime"`;

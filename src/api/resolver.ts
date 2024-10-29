@@ -103,12 +103,16 @@ export class ProfileResolver {
     domainCode: any,
     decodedToken: any
   ): Promise<any> {
-    // const userId = decodedToken.userId;
-    // console.log("\n\n\nuserId====", userId);
     return await this.profileRepository.userRegisterPageDataV1(
       userData,
       domainCode
     );
+  }
+  public async userMemberListV1(userData: any, domainCode: any): Promise<any> {
+    return await this.profileRepository.userMemberListV1(userData, domainCode);
+  }
+  public async sectionTimeV1(userData: any, domainCode: any): Promise<any> {
+    return await this.profileRepository.sectionTimeV1(userData, domainCode);
   }
 }
 
