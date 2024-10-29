@@ -123,3 +123,53 @@ export function updateDataApproval(tableRows: any) {
     </html>`;
   return mail;
 }
+
+export function updateDataRejection(tableRows: any) {
+  const mail = ` <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Profile Update Approval</title>
+        <style>
+          body { font-family: Arial, sans-serif; background-color: #f9f9f9; color: #333; }
+          .container { max-width: 600px; background-color: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
+          .header { background-color: #ff7043; padding: 15px; text-align: center; border-radius: 8px 8px 0 0; color: #ffffff; }
+          .header h1 { margin: 0; font-size: 24px; }
+          .content { padding: 20px; }
+          .content p { font-size: 16px; line-height: 1.6; }
+          .table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+          .table th, .table td { padding: 12px; text-align: left; border: 1px solid #ddd; }
+          .table th { background-color: #ffab91; color: #333; }
+          .footer { text-align: center; padding: 10px; font-size: 14px; color: #666; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>Ublis Yogo</h1>
+          </div>
+          <div class="content">
+            <p>Dear User,</p>
+            <p>The Director has Rejected the recent changes you made to your profile data. Below are the details of the changes:</p>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Label</th>
+                  <th>Old Data</th>
+                  <th>New Data</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${tableRows}
+              </tbody>
+            </table>
+            <p>If you have any questions regarding these changes, feel free to contact us.</p>
+            <p>Best regards,<br>Director, Ublis Yogo</p>
+          </div>
+          <div class="footer">&copy; 2024 Ublis Yogo. All rights reserved.</div>
+        </div>
+      </body>
+      </html>`;
+  return mail;
+}

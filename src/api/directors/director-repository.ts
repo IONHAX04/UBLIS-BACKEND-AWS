@@ -6,7 +6,11 @@ import { viewFile, deleteFile, storeFile } from "../../helper/storage";
 import path from "path";
 import { PoolClient } from "pg";
 import { sendEmail } from "../../helper/mail";
-import { staffDetailSend, updateDataApproval } from "../../helper/mailcontent";
+import {
+  staffDetailSend,
+  updateDataApproval,
+  updateDataRejection,
+} from "../../helper/mailcontent";
 
 import {
   queryStaffDetails,
@@ -511,27 +515,6 @@ export class DirectorRepository {
     try {
       const getList = await executeQuery(userUpdateApprovalList, [id]);
 
-      // for (let i = 0; i < getList.length; i++) {
-      //   if (getList && getList[i].refChanges) {
-      //     const refChanges = getList[i].refChanges;
-
-      //     const transformedRefChanges: {
-      //       [key: number]: { oldValue: string; newValue: string };
-      //     } = {};
-
-      //     Object.keys(refChanges).forEach((key, index) => {
-      //       transformedRefChanges[index] = {
-      //         oldValue: refChanges[key].oldValue,
-      //         newValue: refChanges[key].newValue,
-      //       };
-      //     });
-
-      //     getList[i].refChanges = transformedRefChanges;
-      //   }
-      // }
-
-      console.log(getList);
-
       return encrypt(
         {
           success: true,
@@ -600,20 +583,16 @@ export class DirectorRepository {
   ): Promise<any> {
     const client: PoolClient = await getClient();
     const staffId = decodedToken || 1;
-    console.log("staffId", staffId);
     const id = userData.refStId;
-    console.log("id", id);
     const userAppId = userData.userAppId;
-    console.log("userAppId", userAppId);
     let tokenData = {
       id: staffId,
     };
     const token = generateToken(tokenData, true);
     try {
       let mailId = await executeQuery(getMailId, [id]);
-      let changeData = {};
+      let changeData: any[] = [];
       mailId = mailId[0].refCtEmail;
-      console.log("mailId", mailId);
       for (let i = 0; i < userAppId.length; i++) {
         const tempData = await executeQuery(getTempData, [userAppId[i]]);
         const transTypeId = tempData[0].transTypeId;
@@ -672,9 +651,20 @@ export class DirectorRepository {
                   newValue: data.newValue,
                   label: label,
                 };
-                console.log("Data", Data);
+                const isDuplicate = changeData.some(
+                  (item) =>
+                    item.label === Data.label &&
+                    item.oldValue === Data.oldValue &&
+                    item.newValue === Data.newValue
+                );
 
-                changeData = { ...changeData, Data };
+                if (!isDuplicate) {
+                  changeData.push(Data); // Push only if not a duplicate
+                }
+
+                if (!queryResult) {
+                  throw new Error("Failed to update the History.");
+                }
 
                 if (!queryResult) {
                   throw new Error("Failed to update the History.");
@@ -707,7 +697,6 @@ export class DirectorRepository {
           </tr>`
           )
           .join("");
-        console.log("tableRows", tableRows);
         const mailOptions = {
           to: Array.isArray(mailId) ? mailId.join(",") : mailId,
           subject: "Director Add U As An Employee In Ublis Yoga",
@@ -760,18 +749,17 @@ export class DirectorRepository {
     };
     const token = generateToken(tokenData, true);
     try {
+      let mailId = await executeQuery(getMailId, [id]);
+      let changeData: any[] = [];
+      mailId = mailId[0].refCtEmail;
       for (let i = 0; i < userAppId.length; i++) {
         const tempData = await executeQuery(getTempData, [userAppId[i]]);
-        console.log("tempData", tempData);
         const transTypeId = 17;
 
         await client.query("BEGIN");
         for (const section in userData) {
           if (userData.hasOwnProperty(section)) {
-            const tableName: string = tempData[0].refTable;
-            const updatedData = tempData[0].refData;
             const changes = tempData[0].refChanges;
-            const identifier = { column: "refStId", value: id };
 
             const userResult1 = await client.query(updateTempData, [
               "reject",
@@ -786,7 +774,7 @@ export class DirectorRepository {
               if (changes.hasOwnProperty(key)) {
                 const parasHistory = [
                   transTypeId,
-                  changes[key],
+                  changes,
                   id,
                   new Date().toLocaleString(),
                   "Front Office",
@@ -797,11 +785,30 @@ export class DirectorRepository {
                   parasHistory
                 );
 
+                const { data, label } = changes;
+                const Data = {
+                  oldValue: data.oldValue,
+                  newValue: data.newValue,
+                  label: label,
+                };
+                const isDuplicate = changeData.some(
+                  (item) =>
+                    item.label === Data.label &&
+                    item.oldValue === Data.oldValue &&
+                    item.newValue === Data.newValue
+                );
+
+                if (!isDuplicate) {
+                  changeData.push(Data); // Push only if not a duplicate
+                }
+
                 if (!queryResult) {
                   throw new Error("Failed to update the History.");
                 }
 
-                const transId = queryResult.rows[0].transId;
+                if (!queryResult) {
+                  throw new Error("Failed to update the History.");
+                }
 
                 const getList = await client.query(userAuditDataRead, [
                   true,
@@ -818,7 +825,33 @@ export class DirectorRepository {
           }
         }
       }
+      const main = async () => {
+        const tableRows = Object.values(changeData)
+          .map(
+            (data: any) => `
+          <tr>
+          <td>${data.label}</td>
+          <td>${data.oldValue}</td>
+          <td>${data.newValue}</td>
+          </tr>`
+          )
+          .join("");
+        const mailOptions = {
+          to: Array.isArray(mailId) ? mailId.join(",") : mailId,
+          subject: "Director Add U As An Employee In Ublis Yoga",
+          html: updateDataRejection(tableRows),
+        };
 
+        // Call the sendEmail function
+        try {
+          await sendEmail(mailOptions);
+          console.log("Email sent successfully!");
+        } catch (error) {
+          console.error("Failed to send email:", error);
+        }
+      };
+
+      main().catch(console.error);
       return encrypt(
         {
           success: true,

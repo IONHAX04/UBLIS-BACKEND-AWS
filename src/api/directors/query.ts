@@ -106,8 +106,8 @@ export const getUpDateList = `SELECT
     u."refStFName",
     u."refStLName",
     b."refBranchName" AS "branchId",
-    TO_DATE(split_part(txn."transTime", ',', 1), 'DD/MM/YYYY') AS "refDate",
-    TO_CHAR(TO_TIMESTAMP(txn."transTime", 'DD/MM/YYYY, HH12:MI:SS am'), 'HH24:MI:SS') AS "refTime",
+    TO_DATE(split_part(MIN(txn."transTime"), ',', 1), 'DD/MM/YYYY') AS "refDate",
+    TO_CHAR(TO_TIMESTAMP(MIN(txn."transTime"), 'DD/MM/YYYY, HH12:MI:SS am'), 'HH24:MI:SS') AS "refTime",
     COUNT(CASE WHEN notif."refRead" = false THEN 1 END) AS "unreadCount",
     CASE
         WHEN txn."transTypeId" BETWEEN 9 AND 13 THEN 'users'
@@ -126,8 +126,6 @@ WHERE
     notif."refRead" = false
 GROUP BY
     u."refStId", u."refSCustId", u."refStFName", u."refStLName", b."refBranchName",
-    TO_DATE(split_part(txn."transTime", ',', 1), 'DD/MM/YYYY'),
-    TO_CHAR(TO_TIMESTAMP(txn."transTime", 'DD/MM/YYYY, HH12:MI:SS am'), 'HH24:MI:SS'),
     CASE
         WHEN txn."transTypeId" BETWEEN 9 AND 13 THEN 'users'
         WHEN txn."transTypeId" = 16 THEN 'front office'
@@ -135,6 +133,7 @@ GROUP BY
     END
 ORDER BY
     u."refStId";
+
 `;
 
 export const userUpdateAuditData = `SELECT 
