@@ -704,7 +704,7 @@ export class StaffRepository {
           message: "user Profile Data is Send for Approval To Update",
           token: token,
         },
-        false
+        true
       );
     } catch (error) {
       await client.query("ROLLBACK");
@@ -713,7 +713,7 @@ export class StaffRepository {
         success: false,
         message: "Error in updating the profile data",
       };
-      return encrypt(results, false);
+      return encrypt(results, true);
     } finally {
       client.release();
     }

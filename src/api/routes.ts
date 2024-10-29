@@ -407,7 +407,7 @@ export class UserPageRoutes implements IRoute {
           method: "POST",
           path: "/api/v1/user/updateProfile",
           config: {
-            // pre: [{ method: validateToken, assign: "token" }],
+            pre: [{ method: validateToken, assign: "token" }],
             handler: UserPage.userProfileUpdate,
             description: "User Profile Update Process",
             auth: false,

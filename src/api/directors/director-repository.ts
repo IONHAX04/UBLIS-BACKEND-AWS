@@ -6,7 +6,7 @@ import { viewFile, deleteFile, storeFile } from "../../helper/storage";
 import path from "path";
 import { PoolClient } from "pg";
 import { sendEmail } from "../../helper/mail";
-import { staffDetailSend } from "../../helper/mailcontent";
+import { staffDetailSend, updateDataApproval } from "../../helper/mailcontent";
 
 import {
   queryStaffDetails,
@@ -691,7 +691,33 @@ export class DirectorRepository {
         }
       }
 
-      //MAIL FUNCTION IS WANT TO WRITE HERE
+      const main = async () => {
+        const tableRows = Object.values(changeData)
+          .map(
+            (data: any) => `
+            <tr>
+              <td>${data.label}</td>
+              <td>${data.oldValue}</td>
+              <td>${data.newValue}</td>
+            </tr>`
+          )
+          .join("");
+        const mailOptions = {
+          to: userData.refEmail, // Replace with the recipient's email
+          subject: "Director Add U As An Employee In Ublis Yoga", // Subject of the email
+          html: updateDataApproval(tableRows),
+        };
+
+        // Call the sendEmail function
+        try {
+          await sendEmail(mailOptions);
+          console.log("Email sent successfully!");
+        } catch (error) {
+          console.error("Failed to send email:", error);
+        }
+      };
+
+      main().catch(console.error);
 
       return encrypt(
         {
