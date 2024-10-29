@@ -100,53 +100,69 @@ ON CAST(th."refStId" AS INTEGER) = u."refStId"
 WHERE th."transTypeId" IN (9, 10, 11, 12, 13, 14, 15) 
   AND (rn."refRead" IS NULL OR rn."refRead" != true);`;
 
-export const getUpDateList = `SELECT 
+export const getUpDateList = `SELECT
     u."refStId",
-    u."refSCustId", 
-    u."refStFName", 
-    u."refStLName", 
-    b."refBranchName",
-    CASE 
-        WHEN txn."transTypeId" BETWEEN 9 AND 13 THEN 'user'
+    u."refSCustId",
+    u."refStFName",
+    u."refStLName",
+    b."refBranchName" AS "branchId",
+    TO_DATE(split_part(txn."transTime", ',', 1), 'DD/MM/YYYY') AS "refDate",
+    TO_CHAR(TO_TIMESTAMP(txn."transTime", 'DD/MM/YYYY, HH12:MI:SS am'), 'HH24:MI:SS') AS "refTime",
+    COUNT(CASE WHEN notif."refRead" = false THEN 1 END) AS "unreadCount",
+    CASE
+        WHEN txn."transTypeId" BETWEEN 9 AND 13 THEN 'users'
         WHEN txn."transTypeId" = 16 THEN 'front office'
-    END AS "TransGroup",
-    MAX(txn."transTime")::DATE AS "refDate",
-    MAX(txn."transTime")::TIME AS "refTime",
-    COUNT(*) AS "groupCount"
-FROM 
-    public.users u
-JOIN 
-    public."refUserTxnHistory" txn ON u."refStId" = txn."refStId"
-LEFT JOIN 
-    public."refNotification" notif ON txn."transId" = notif."transId"
-JOIN 
+        ELSE 'other'
+    END AS "groupType"
+FROM
+    public."refNotification" notif
+JOIN
+    public."refUserTxnHistory" txn ON notif."transId" = txn."transId"
+JOIN
+    public.users u ON u."refStId" = txn."refStId"
+LEFT JOIN
     public.branch b ON u."refBranchId" = b."refbranchId"
+WHERE
+    notif."refRead" = false
+GROUP BY
+    u."refStId", u."refSCustId", u."refStFName", u."refStLName", b."refBranchName",
+    TO_DATE(split_part(txn."transTime", ',', 1), 'DD/MM/YYYY'),
+    TO_CHAR(TO_TIMESTAMP(txn."transTime", 'DD/MM/YYYY, HH12:MI:SS am'), 'HH24:MI:SS'),
+    CASE
+        WHEN txn."transTypeId" BETWEEN 9 AND 13 THEN 'users'
+        WHEN txn."transTypeId" = 16 THEN 'front office'
+        ELSE 'other'
+    END
+ORDER BY
+    u."refStId";
+`;
+
+export const userUpdateAuditData = `SELECT 
+    th."transId", th."transTypeId", tt."transTypeText",th."transData", th."transTime", th."refStId", th."refUpdatedBy", u."refSCustId"
+FROM 
+    public."refUserTxnHistory" th
+LEFT JOIN 
+    public."refNotification" rn ON CAST(th."transId" AS INTEGER) = rn."transId"
+JOIN 
+    public."users" u ON CAST(th."refStId" AS INTEGER) = u."refStId"
+JOIN 
+    public."transType" tt ON th."transTypeId" = tt."transTypeId"
 WHERE 
-    (txn."transTypeId" BETWEEN 9 AND 13 OR txn."transTypeId" = 16)
-    AND (notif."refRead" IS NULL OR notif."refRead" = false)
-GROUP BY 
-    "TransGroup", u."refSCustId", u."refStFName", u."refStLName", b."refBranchName", u."refStId"
+    th."transTypeId" IN (9, 10, 11, 12, 13, 14, 15) AND (rn."refRead" IS NULL OR rn."refRead" != true)AND u."refStId" = $1
 ORDER BY 
-    "TransGroup";`;
+    th."transId" ASC;`;
 
-export const userUpdateAuditData = `SELECT th."transId", th."transTypeId", th."transData", th."transTime", th."refStId", th."refUpdatedBy", u."refSCustId"
-FROM public."refUserTxnHistory" th
-LEFT JOIN public."refNotification" rn
-ON CAST(th."transId" AS INTEGER) = rn."transId"
-JOIN public."users" u
-ON CAST(th."refStId" AS INTEGER) = u."refStId"
-WHERE th."transTypeId" IN (9, 10, 11, 12, 13, 14, 15) 
-  AND (rn."refRead" IS NULL OR rn."refRead" != true)
-  AND u."refStId" = $1
-ORDER BY th."transId" ASC;`;
+export const userUpdateApprovalList = `SELECT * 
+FROM public."refTempUserData" td
+JOIN 
+    public."transType" tt ON td."transTypeId" = tt."transTypeId"
+WHERE td."refStId" = $1 AND td."refStatus" IS NULL;`;
 
-export const userAuditDataRead = `INSERT INTO public."refNotification" ("transId","refRead","refReadBy") VALUES ($1,$2,$3);`;
+export const userAuditDataRead = `UPDATE public."refNotification" SET "refRead" = $1, "refReadBy" = $2 WHERE "transId" = $3;`;
 
 export const getTempData = `SELECT * FROM public."refTempUserData" WHERE "refTeId"=$1`;
 
 export const updateTempData = `UPDATE public."refTempUserData" SET "refStatus"=$1 WHERE "refTeId"=$2;
 `;
 
-export const userUpdateApprovalList = `SELECT * 
-FROM public."refTempUserData" td
-WHERE td."refStId" = $1 AND td."refStatus" IS NULL;`;
+export const getMailId = `SELECT "refCtEmail" FROM public."refUserCommunication" WHERE "refStId"=$1`;

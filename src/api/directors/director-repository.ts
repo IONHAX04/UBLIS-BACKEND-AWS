@@ -5,6 +5,8 @@ import bcrypt from "bcryptjs";
 import { viewFile, deleteFile, storeFile } from "../../helper/storage";
 import path from "path";
 import { PoolClient } from "pg";
+import { sendEmail } from "../../helper/mail";
+import { staffDetailSend } from "../../helper/mailcontent";
 
 import {
   queryStaffDetails,
@@ -28,6 +30,7 @@ import {
   getTempData,
   updateTempData,
   userUpdateApprovalList,
+  getMailId,
 } from "./query";
 import { encrypt } from "../../helper/encrypt";
 import { generateToken, decodeToken } from "../../helper/token";
@@ -250,9 +253,19 @@ export class DirectorRepository {
       ];
 
       const userResult = await executeQuery(insertUserQuery, params);
+
+      function formatDate(isoDate: any) {
+        const date = new Date(isoDate); // Create a new Date object
+        const day = String(date.getDate()).padStart(2, "0"); // Get the day and pad with zero if needed
+        const month = String(date.getMonth() + 1).padStart(2, "0"); // Get the month (0-based) and pad with zero
+        const year = date.getFullYear(); // Get the full year
+
+        return `${year}`; // Return formatted date
+      }
+
       const newUser = userResult[0];
 
-      const dobYear = userData.refDob.split("-")[2];
+      const dobYear = formatDate(userData.refDob);
 
       const password = `${userData.refFName.toUpperCase()}$${dobYear}`;
 
@@ -286,6 +299,24 @@ export class DirectorRepository {
         domainResult.length > 0 &&
         communicationResult.length > 0
       ) {
+        const main = async () => {
+          const mailOptions = {
+            to: userData.refEmail, // Replace with the recipient's email
+            subject: "Director Add U As An Employee In Ublis Yoga", // Subject of the email
+            html: staffDetailSend(newUser.refSCustId, password),
+          };
+
+          // Call the sendEmail function
+          try {
+            await sendEmail(mailOptions);
+            console.log("Email sent successfully!");
+          } catch (error) {
+            console.error("Failed to send email:", error);
+          }
+        };
+
+        main().catch(console.error);
+
         const history = [
           1,
           new Date().toLocaleString(),
@@ -401,8 +432,21 @@ export class DirectorRepository {
     let token = {
       id: staffId,
     };
+
+    function formatDate(isoDate: any) {
+      const date = new Date(isoDate);
+      const day = String(date.getDate()).padStart(2, "0");
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const year = date.getFullYear();
+
+      return `${year}-${month}-${day}`;
+    }
     try {
       const getList = await executeQuery(getUpDateList, []);
+      for (let i = 0; i < getList.length; i++) {
+        getList[i].refDate = formatDate(getList[i].refDate);
+      }
+
       return encrypt(
         {
           success: true,
@@ -432,6 +476,7 @@ export class DirectorRepository {
     let token = {
       id: staffId,
     };
+
     try {
       const getList = await executeQuery(userUpdateAuditData, [id]);
       return encrypt(
@@ -465,6 +510,28 @@ export class DirectorRepository {
     };
     try {
       const getList = await executeQuery(userUpdateApprovalList, [id]);
+
+      // for (let i = 0; i < getList.length; i++) {
+      //   if (getList && getList[i].refChanges) {
+      //     const refChanges = getList[i].refChanges;
+
+      //     const transformedRefChanges: {
+      //       [key: number]: { oldValue: string; newValue: string };
+      //     } = {};
+
+      //     Object.keys(refChanges).forEach((key, index) => {
+      //       transformedRefChanges[index] = {
+      //         oldValue: refChanges[key].oldValue,
+      //         newValue: refChanges[key].newValue,
+      //       };
+      //     });
+
+      //     getList[i].refChanges = transformedRefChanges;
+      //   }
+      // }
+
+      console.log(getList);
+
       return encrypt(
         {
           success: true,
@@ -496,9 +563,9 @@ export class DirectorRepository {
     try {
       for (let i = 0; i < userData.transId.length; i++) {
         const getList = await executeQuery(userAuditDataRead, [
-          userData.transId[i],
           true,
           staffId,
+          userData.transId[i],
         ]);
         if (!getList) {
           console.log(
@@ -540,16 +607,21 @@ export class DirectorRepository {
     };
     const token = generateToken(tokenData, true);
     try {
+      let mailId = await executeQuery(getMailId, [id]);
+      let changeData = {};
+      mailId = mailId[0].refCtEmail;
       for (let i = 0; i < userAppId.length; i++) {
         const tempData = await executeQuery(getTempData, [userAppId[i]]);
         const transTypeId = tempData[0].transTypeId;
-
         await client.query("BEGIN");
         for (const section in userData) {
           if (userData.hasOwnProperty(section)) {
             const tableName: string = tempData[0].refTable;
+
             const updatedData = tempData[0].refData;
+
             const changes = tempData[0].refChanges;
+
             const identifier = { column: "refStId", value: id };
 
             const { updateQuery, values } = buildUpdateQuery(
@@ -590,16 +662,23 @@ export class DirectorRepository {
                   parasHistory
                 );
 
+                const { data, label } = changes[key];
+                const Data = {
+                  oldValue: data.oldValue,
+                  newValue: data.newValue,
+                  label: label,
+                };
+
+                changeData = { ...changeData, Data };
+
                 if (!queryResult) {
                   throw new Error("Failed to update the History.");
                 }
 
-                const transId = queryResult.rows[0].transId;
-
                 const getList = await client.query(userAuditDataRead, [
-                  transId,
                   true,
                   staffId,
+                  tempData[0].refTransId,
                 ]);
 
                 if (!getList) {
@@ -611,6 +690,8 @@ export class DirectorRepository {
           }
         }
       }
+
+      //MAIL FUNCTION IS WANT TO WRITE HERE
 
       return encrypt(
         {
@@ -649,6 +730,7 @@ export class DirectorRepository {
     try {
       for (let i = 0; i < userAppId.length; i++) {
         const tempData = await executeQuery(getTempData, [userAppId[i]]);
+        console.log("tempData", tempData);
         const transTypeId = 17;
 
         await client.query("BEGIN");
@@ -690,9 +772,9 @@ export class DirectorRepository {
                 const transId = queryResult.rows[0].transId;
 
                 const getList = await client.query(userAuditDataRead, [
-                  transId,
                   true,
                   staffId,
+                  tempData[0].refTransId,
                 ]);
 
                 if (!getList) {

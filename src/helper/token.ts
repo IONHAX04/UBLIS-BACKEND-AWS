@@ -43,7 +43,7 @@ function decodeToken(token: string): JwtPayload | { error: string } {
     if (typeof decoded === "string") {
       return { error: "Invalid token format" };
     }
-    return decoded; // Return decoded token data (JwtPayload)
+    return decoded;
   } catch (error) {
     return { error: "Invalid or expired token" };
   }

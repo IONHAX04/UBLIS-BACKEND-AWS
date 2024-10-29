@@ -238,7 +238,7 @@ WHERE th."transTypeId" IN (9, 10, 11, 12, 13, 14, 15)
 
 export const getUserData = `SELECT * FROM public."{{tableName}}" WHERE "refStId" = $1;`;
 
-export const userTempData = `INSERT INTO public."refTempUserData" ("refStId","transTypeId","refChanges","refData","refTable","refTime") VALUES ($1,$2,$3,$4,$5,$6);`;
+export const userTempData = `INSERT INTO public."refTempUserData" ("refStId","transTypeId","refChanges","refData","refTable","refTime","refTransId") VALUES ($1,$2,$3,$4,$5,$6,$7);`;
 
 export const updateHistoryQuery1 = `
   INSERT INTO public."refUserTxnHistory" (
@@ -248,3 +248,7 @@ export const updateHistoryQuery1 = `
 `;
 
 export const getTempData = `SELECT * FROM public."refTempUserData" WHERE "refTeId"=$1`;
+
+export const getPresentHealthLabel = 'SELECT * FROM public."refHealthIssues"';
+
+export const updateNotification = `INSERT INTO public."refNotification" ("transId", "refRead") VALUES ($1, $2);`;

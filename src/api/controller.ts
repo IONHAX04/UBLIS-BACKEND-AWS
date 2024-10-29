@@ -1126,13 +1126,13 @@ export class userDashBoard {
     request: any,
     response: Hapi.ResponseToolkit
   ): Promise<any> => {
-    // const decodedToken = request.plugins.token.id;
+    const decodedToken = request.plugins.token.id;
     try {
-      logger.info(`GET URL REQ => ${request.url.href}`);
+      logger.info(`GET URL REQ line 1133=> ${request.url.href}`);
       const domainCode = request.headers.domain_code || "";
       const entity = await this.resolver.userProfileDataV1(
-        request.payload
-        // decodedToken
+        request.payload,
+        decodedToken
       );
 
       if (entity.success) {
@@ -1157,13 +1157,13 @@ export class userDashBoard {
     request: any,
     response: Hapi.ResponseToolkit
   ): Promise<any> => {
-    const decodedToken = request.plugins.token.id;
+    // const decodedToken = request.plugins.token.id;
     try {
       logger.info(`GET URL REQ => ${request.url.href}`);
       const domainCode = request.headers.domain_code || "";
       const entity = await this.resolver.userProfileUpdateV1(
         request.payload,
-        decodedToken
+        // decodedToken
       );
 
       if (entity.success) {

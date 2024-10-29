@@ -3,6 +3,8 @@ import { buildUpdateQuery, getChanges } from "../../helper/buildquery";
 import { PoolClient } from "pg";
 import path from "path";
 import { viewFile } from "../../helper/storage";
+import { reLabelText } from "../../helper/label";
+
 import {
   checkQuery,
   getCustomerCount,
@@ -22,6 +24,8 @@ import {
   getCommunicationType,
   updateProfileAddressQuery,
   updateHistoryQuery1,
+  getPresentHealthLabel,
+  updateNotification,
 } from "./query";
 import { getUserData as rawGetUserDataQuery } from "./query";
 import { encrypt } from "../../helper/encrypt";
@@ -396,7 +400,6 @@ export class UserRepository {
       id: id,
     };
 
-    console.log("-------------------------------------------------");
     let refStId;
     const checkUser = await executeQuery(getUserType, [id]);
     if (checkUser[0].refUtId == 5 || checkUser[0].refUtId == 6) {
@@ -406,10 +409,7 @@ export class UserRepository {
     }
 
     const token = generateToken(tokenData, true);
-    console.log(
-      "token ----------------------------------------------------",
-      token
-    );
+
     try {
       let profileData = {};
       const Datas = await executeQuery(getProfileData, [refStId]);
@@ -697,10 +697,7 @@ export class UserRepository {
             default:
               continue;
           }
-
           const identifier = { column: "refStId", value: refStId };
-          const changes = getChanges(updatedData, oldData);
-          console.log("\n\n\n\n\n\nchanges line --------------677", changes);
 
           const { updateQuery, values } = buildUpdateQuery(
             tableName,
@@ -710,17 +707,46 @@ export class UserRepository {
 
           const userResult = await client.query(updateQuery, values);
 
+          if (oldData.refPerHealthId && updatedData.refPerHealthId) {
+            const getLabel = await executeQuery(getPresentHealthLabel, []);
+
+            const userTypeMap = new Map<number, string>(
+              getLabel.map((item) => [item.refHealthId, item.refHealth])
+            );
+
+            const parsedArray1: number[] = JSON.parse(oldData.refPerHealthId);
+            const parsedArray2: number[] = JSON.parse(
+              updatedData.refPerHealthId
+            );
+
+            const labelsOldData = parsedArray1.map(
+              (userId: number) => userTypeMap.get(userId) || "Unknown"
+            );
+            const labelsUpdatedData = parsedArray2.map(
+              (userId: number) => userTypeMap.get(userId) || "Unknown"
+            );
+
+            oldData.refPerHealthId = JSON.stringify(labelsOldData);
+            updatedData.refPerHealthId = JSON.stringify(labelsUpdatedData);
+          }
+
+          const changes = getChanges(updatedData, oldData);
+          console.log("changes", changes);
+
           if (!userResult.rowCount) {
             throw new Error("Failed to update the profile data.");
           }
 
           for (const key in changes) {
             if (changes.hasOwnProperty(key)) {
-              const change = changes[key];
+              const tempChange = {
+                data: changes[key],
+                label: reLabelText(key),
+              };
 
               const parasHistory = [
                 transTypeId,
-                changes[key],
+                tempChange,
                 refStId,
                 new Date().toLocaleString(),
                 "user",
@@ -731,6 +757,14 @@ export class UserRepository {
               );
               if (!queryResult.rowCount) {
                 throw new Error("Failed to update the History.");
+              }
+              const paramsNotification = [queryResult.rows[0].transId, false];
+              const notificationResult = await client.query(
+                updateNotification,
+                paramsNotification
+              );
+              if (!notificationResult.rowCount) {
+                throw new Error("Failed to update The Notification Table.");
               }
 
               await client.query("COMMIT");
@@ -748,7 +782,7 @@ export class UserRepository {
           message: "Profile data updated  successfully",
           token: token,
         },
-        true
+        false
       );
     } catch (error) {
       await client.query("ROLLBACK");
@@ -757,7 +791,7 @@ export class UserRepository {
         success: false,
         message: "Error in updating the profile data",
       };
-      return encrypt(results, true);
+      return encrypt(results, false);
     } finally {
       client.release();
     }

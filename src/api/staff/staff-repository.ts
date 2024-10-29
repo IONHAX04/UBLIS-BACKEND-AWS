@@ -2,8 +2,10 @@ import { executeQuery, getClient } from "../../helper/db";
 import { getUserData as rawGetUserDataQuery } from "./query";
 import { buildUpdateQuery, getChanges } from "../../helper/buildquery";
 import { PoolClient } from "pg";
+import { reLabelText } from "../../helper/label";
 import {
   fetchClientData,
+  getPresentHealthLabel,
   updateUserType,
   updateUserStatus,
   updateHistoryQuery,
@@ -21,6 +23,7 @@ import {
   fetchClientData1,
   updateHistoryQuery1,
   userTempData,
+  updateNotification,
 } from "./query";
 import { encrypt } from "../../helper/encrypt";
 import { generateToken, decodeToken } from "../../helper/token";
@@ -500,7 +503,7 @@ export class StaffRepository {
 
               userData = { ...userData, olddata };
 
-              transTypeId = 16;
+              transTypeId = 9;
               let refAdAdd1Type: number = 3;
               let refAdAdd2Type: number = 0;
 
@@ -523,12 +526,13 @@ export class StaffRepository {
 
               break;
             case "personalData":
-              transTypeId = 16;
+              transTypeId = 10;
               tableName = "users";
               getUserData = rawGetUserDataQuery.replace(
                 "{{tableName}}",
                 tableName
               );
+
               newData = await executeQuery(getUserData, [id]);
 
               function formatDate(isoDate: any) {
@@ -551,7 +555,7 @@ export class StaffRepository {
               break;
 
             case "generalhealth":
-              transTypeId = 16;
+              transTypeId = 11;
               tableName = "refGeneralHealth";
               getUserData = rawGetUserDataQuery.replace(
                 "{{tableName}}",
@@ -570,7 +574,7 @@ export class StaffRepository {
               const refPerHealthId = JSON.stringify(
                 updatedData.refPresentHealth
               );
-              transTypeId = 16;
+              transTypeId = 12;
               tableName = "refGeneralHealth";
               getUserData = rawGetUserDataQuery.replace(
                 "{{tableName}}",
@@ -590,7 +594,7 @@ export class StaffRepository {
               break;
 
             case "communication":
-              transTypeId = 16;
+              transTypeId = 13;
               tableName = "refUserCommunication";
               getUserData = rawGetUserDataQuery.replace(
                 "{{tableName}}",
@@ -607,34 +611,47 @@ export class StaffRepository {
             default:
               continue;
           }
-          const changes = getChanges(updatedData, oldData);
-          console.log(
-            "\n\n\n\n\n\nchanges line --------------677 staff updation page",
-            changes
-          );
-          const params = [
-            id,
-            transTypeId,
-            changes,
-            updatedData,
-            tableName,
-            new Date().toLocaleString(),
-          ];
-          console.log("params", params);
+          let temp1, temp2;
+          temp1 = updatedData;
+          temp2 = oldData;
+          if (oldData.refPerHealthId && updatedData.refPerHealthId) {
+            (temp1 = updatedData), (temp2 = oldData);
+            const getLabel = await executeQuery(getPresentHealthLabel, []);
 
-          const userResult = await client.query(userTempData, params);
-
-          if (!userResult) {
-            throw new Error(
-              "Failed to update the profile data from Front Desk"
+            const userTypeMap = new Map<number, string>(
+              getLabel.map((item) => [item.refHealthId, item.refHealth])
             );
+
+            const parsedArray1: number[] = JSON.parse(temp2.refPerHealthId);
+            const parsedArray2: number[] = JSON.parse(temp1.refPerHealthId);
+
+            const labelsOldData = parsedArray1.map(
+              (userId: number) => userTypeMap.get(userId) || "Unknown"
+            );
+            const labelsUpdatedData = parsedArray2.map(
+              (userId: number) => userTypeMap.get(userId) || "Unknown"
+            );
+
+            temp2.refPerHealthId = JSON.stringify(labelsOldData);
+            temp1.refPerHealthId = JSON.stringify(labelsUpdatedData);
           }
+
+          const changes = getChanges(temp1, temp2);
+          console.log("changes", changes);
 
           for (const key in changes) {
             if (changes.hasOwnProperty(key)) {
+              const tempChange = {
+                data: changes[key],
+                label: reLabelText(key),
+              };
+              const tempData = {
+                [key]: changes[key].newValue,
+              };
+
               const parasHistory = [
-                transTypeId,
-                changes[key],
+                16,
+                tempChange,
                 id,
                 new Date().toLocaleString(),
                 "user",
@@ -643,13 +660,40 @@ export class StaffRepository {
                 updateHistoryQuery1,
                 parasHistory
               );
+
               if (!queryResult) {
                 throw new Error("Failed to update the History.");
               }
 
-              await client.query("COMMIT");
+              const params = [
+                id,
+                transTypeId,
+                tempChange,
+                tempData,
+                tableName,
+                new Date().toLocaleString(),
+                queryResult.rows[0].transId,
+              ];
+
+              const userResult = await client.query(userTempData, params);
+
+              if (!userResult) {
+                throw new Error(
+                  "Failed to update the profile data from Front Desk"
+                );
+              }
+
+              const paramsNotification = [queryResult.rows[0].transId, false];
+              const notificationResult = await client.query(
+                updateNotification,
+                paramsNotification
+              );
+              if (!notificationResult.rowCount) {
+                throw new Error("Failed to update The Notification Table.");
+              }
             }
           }
+          await client.query("COMMIT");
         }
       }
       const token = generateToken(tokenData, true);
@@ -660,7 +704,7 @@ export class StaffRepository {
           message: "user Profile Data is Send for Approval To Update",
           token: token,
         },
-        true
+        false
       );
     } catch (error) {
       await client.query("ROLLBACK");
@@ -674,88 +718,4 @@ export class StaffRepository {
       client.release();
     }
   }
-  // public async userDataUpdateApprovalBtnV1(
-  //   userData: any,
-  //   decodedToken: number
-  // ): Promise<any> {
-  //   const client: PoolClient = await getClient();
-  //   const staffId = decodedToken || 1;
-  //   const id = userData.refStId;
-  //   const userAppId = userData.userAppId;
-  //   let tokenData = {
-  //     id: staffId,
-  //   };
-  //   try {
-  //     for (let i = 0; i < userAppId.length; i++) {
-  //       const tempData = await executeQuery(getTempData, [userAppId[i]]);
-  //       const transTypeId = tempData[0].transTypeId;
-
-  //       await client.query("BEGIN");
-  //       for (const section in userData) {
-  //         if (userData.hasOwnProperty(section)) {
-  //           const tableName: string = tempData[0].refTable;
-  //           const updatedData = tempData[0].refData;
-  //           const changes = tempData[0].refChanges;
-  //           const identifier = { column: "refStId", value: id };
-
-  //           const { updateQuery, values } = buildUpdateQuery(
-  //             tableName,
-  //             updatedData,
-  //             identifier
-  //           );
-
-  //           const userResult = await client.query(updateQuery, values);
-
-  //           if (!userResult.rowCount) {
-  //             throw new Error(
-  //               "Failed to update the profile data from Front Desk"
-  //             );
-  //           }
-
-  //           for (const key in changes) {
-  //             if (changes.hasOwnProperty(key)) {
-  //               const parasHistory = [
-  //                 transTypeId,
-  //                 changes[key],
-  //                 id,
-  //                 new Date().toLocaleString(),
-  //                 "Front Office",
-  //               ];
-  //               const queryResult = await client.query(
-  //                 updateHistoryQuery1,
-  //                 parasHistory
-  //               );
-  //               if (!queryResult) {
-  //                 throw new Error("Failed to update the History.");
-  //               }
-
-  //               await client.query("COMMIT");
-  //             }
-  //           }
-  //         }
-  //       }
-  //     }
-
-  //     const token = generateToken(tokenData, true);
-
-  //     return encrypt(
-  //       {
-  //         success: true,
-  //         message: "user Profile Data is Send for Approval To Update",
-  //         token: token,
-  //       },
-  //       true
-  //     );
-  //   } catch (error) {
-  //     await client.query("ROLLBACK");
-
-  //     const results = {
-  //       success: false,
-  //       message: "Error in updating the profile data",
-  //     };
-  //     return encrypt(results, false);
-  //   } finally {
-  //     client.release();
-  //   }
-  // }
 }

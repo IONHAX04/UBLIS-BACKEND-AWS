@@ -147,3 +147,5 @@ export const updateHistoryQuery1 = `
 export const getUserData = `SELECT * FROM public."{{tableName}}" WHERE "refStId" = $1;`;
 
 export const getPresentHealthLabel = 'SELECT * FROM public."refHealthIssues"';
+
+export const updateNotification = `INSERT INTO public."refNotification" ("transId", "refRead") VALUES ($1, $2);`;
