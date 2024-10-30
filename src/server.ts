@@ -3,7 +3,6 @@
 const Hapi = require("@hapi/hapi");
 import logger from "./helper/logger";
 import Router from "./routes";
-
 import * as DotEnv from "dotenv";
 
 const init = async () => {
@@ -15,7 +14,10 @@ const init = async () => {
       port: process.env.PORT,
       routes: {
         security: true,
-        cors: true,
+        cors: {
+          origin: ["*"],
+          additionalHeaders: ["cache-control", "x-validate"],
+        },
         payload: {
           maxBytes: 5242880,
         },
